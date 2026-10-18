@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prénoms Sénégalais — générateur de prénoms</title>
+  <meta name="description" content="Générez au hasard des prénoms sénégalais par ethnie et par sexe, découvrez leur signification et leur date de fête.">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="#" class="brand" aria-label="Prénoms Sénégalais — accueil">
+        <img src="assets/arbre.png" alt="" class="brand-tree">
+        <span class="wordmark">
+          <span class="wm-top">Prénoms</span>
+          <span class="wm-rule"><i></i><b>★</b><i></i></span>
+          <span class="wm-bottom">Sénégalais</span>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#generateur">Générer</a>
+        <a href="#explorer">Explorer</a>
+        <a href="#favoris">Favoris <span id="fav-count" class="pill" hidden></span></a>
+        <a href="#apropos">À propos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap today" id="today" hidden>
+      <span class="today-label">Prénom du jour · <span id="today-date"></span></span>
+      <button class="today-name" id="today-name" type="button"></button>
+    </section>
+
+    <section class="wrap generator" id="generateur">
+      <div class="controls card">
+        <h1>Trouvez un prénom sénégalais</h1>
+        <p class="lead">Choisissez une ethnie et un sexe, puis laissez le hasard faire.</p>
+
+        <fieldset>
+          <legend>Ethnie</legend>
+          <div class="chips" id="ethnie-chips"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Sexe</legend>
+          <div class="segmented" id="sexe">
+            <button type="button" data-v="all" class="on">Tous</button>
+            <button type="button" data-v="f">Fille</button>
+            <button type="button" data-v="m">Garçon</button>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="inclure-x" checked>
+            Inclure les prénoms dont le genre n'est pas encore précisé
+          </label>
+        </fieldset>
+
+        <button class="btn-generate" id="btn-generate" type="button">
+          Générer un prénom
+        </button>
+        <p class="hint">Astuce : appuyez sur <kbd>Espace</kbd> pour générer · <span id="pool-count"></span></p>
+      </div>
+
+      <div class="result card" id="result" aria-live="polite">
+        <div class="result-empty" id="result-empty">
+          <img src="assets/arbre.png" alt="">
+          <p>Votre prénom apparaîtra ici.</p>
+        </div>
+        <div class="result-body" id="result-body" hidden></div>
+        <div class="others" id="others" hidden>
+          <h3>Autres idées</h3>
+          <div class="name-chips" id="others-list"></div>
+        </div>
+        <div class="history" id="history" hidden>
+          <h3>Déjà générés</h3>
+          <div class="name-chips small" id="history-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap section" id="explorer">
+      <div class="section-head">
+        <h2>Explorer tous les prénoms</h2>
+        <button class="btn-ghost" type="button" data-propose>+ Proposer un nouveau prénom</button>
+      </div>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Rechercher un prénom (ex. Ngoné, Sokhna, Koumba…)" autocomplete="off">
+        <select id="f-ethnie" aria-label="Ethnie"></select>
+        <select id="f-genre" aria-label="Genre">
+          <option value="all">Tous les genres</option>
+          <option value="f">Filles</option>
+          <option value="m">Garçons</option>
+          <option value="x">Genre non précisé</option>
+        </select>
+        <label class="check"><input type="checkbox" id="f-sens"> Avec signification</label>
+      </div>
+      <p class="muted" id="explore-count"></p>
+      <div class="name-grid" id="explore-list"></div>
+      <button class="btn-ghost more" id="explore-more" type="button" hidden>Afficher plus</button>
+    </section>
+
+    <section class="wrap section" id="favoris">
+      <div class="section-head">
+        <h2>Mes favoris</h2>
+        <button class="btn-ghost" id="fav-share" type="button" hidden>Partager ma liste</button>
+      </div>
+      <p class="muted" id="fav-empty">Aucun favori pour l'instant. Cliquez sur ♡ à côté d'un prénom pour l'ajouter.</p>
+      <div class="name-grid" id="fav-list"></div>
+    </section>
+
+    <section class="wrap section" id="apropos">
+      <h2>À propos</h2>
+      <div class="about-grid">
+        <article class="card">
+          <h3>La source</h3>
+          <p>Les prénoms proviennent du calendrier <em>« Pour la sauvegarde des prénoms sénégalais »</em> (2018),
+            conçu par le Professeur Babacar Mbaye Diop (FLSH-UCAD), avec le soutien de la Direction du Patrimoine Culturel
+            du Ministère de la Culture. Chaque jour de l'année y porte un prénom : c'est la « date de fête » affichée ici.</p>
+          <p>Les prénoms du calendrier sans mention d'ethnie sont classés <strong>Wolof</strong> par défaut. Le genre
+            n'y est pas toujours indiqué : vous pouvez aider à le préciser grâce au bouton
+            « Suggérer une modification ».</p>
+          <p class="muted" id="stats"></p>
+        </article>
+        <article class="card">
+          <h3>Lire l'orthographe</h3>
+          <p>Les prénoms sont écrits dans l'orthographe officielle des langues nationales. Quelques repères :</p>
+          <ul class="ortho">
+            <li><b>c</b> se prononce « tch / thi » — <i>Coro</i> → Thioro</li>
+            <li><b>j</b> se prononce « dj / di » — <i>Joor</i> → Dior</li>
+            <li><b>x</b> se prononce « kh » — <i>Soxna</i> → Sokhna</li>
+            <li><b>ñ</b> se prononce « gn » — <i>Miñaan</i> → Mignane</li>
+            <li><b>ŋ</b> se prononce « ng » — <i>Maalaŋ</i> → Malang</li>
+            <li><b>u</b> se prononce « ou » — <i>Kummba</i> → Koumba</li>
+            <li><b>e</b> se prononce « é / è », <b>ë</b> comme « e » — <i>Ndey</i> → Ndèye</li>
+            <li>Une voyelle doublée est longue — <i>Seeni</i></li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Le saviez-vous ?</h3>
+          <p>Chez les Wolofs, ajouter le préfixe <b>« Ma »</b> à certains prénoms féminins donne un prénom masculin :
+            Ma-Biige, Ma-Kura, Ma-Coro, Ma-Penda, Ma-Koddu, Ma-Joor, Ma-Soxna…</p>
+          <p>Le même préfixe sur un nom de famille donne aussi un prénom : Ma-Ba, Ma-Siise, Ma-Joob, Ma-Fall,
+            Ma-Njaay, Ma-Mbay, Ma-Sall, Ma-Seen, Ma-Ndaw…</p>
+        </article>
+        <article class="card">
+          <h3>Jours et mois en pulaar</h3>
+          <dl class="pulaar">
+            <dt>Jours</dt>
+            <dd>Aabnde (lundi) · Mawbaare (mardi) · Njeslaare (mercredi) · Naasaande (jeudi) · Mawnde (vendredi) ·
+              Hoore-biir (samedi) · Dewo hoore-biir (dimanche)</dd>
+            <dt>Mois</dt>
+            <dd>Siilo (janvier) · Colte (février) · Mbooy (mars) · Seedto (avril) · Duujal (mai) · Korse (juin) ·
+              Morso (juillet) · Juko (août) · Silto (septembre) · Yarkoma (octobre) · Jolal (novembre) · Bowte (décembre)</dd>
+          </dl>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
+      <button class="btn-ghost light" type="button" data-propose>Proposer un prénom</button>
+    </div>
+  </footer>
+
+  <!-- Formulaire de suggestion -->
+  <dialog id="suggest-dialog" class="dialog">
+    <form id="suggest-form" method="dialog">
+      <header class="dialog-head">
+        <h2 id="suggest-title">Suggérer une modification</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fermer">✕</button>
+      </header>
+      <div class="dialog-body">
+        <label>Type de contribution
+          <select name="type" id="s-type">
+            <option value="definition">Donner la signification du prénom</option>
+            <option value="modification">Corriger une information (ethnie, genre, orthographe…)</option>
+            <option value="nouveau">Proposer un nouveau prénom</option>
+          </select>
+        </label>
+        <label>Prénom
+          <input name="prenom" id="s-prenom" required maxlength="80">
+        </label>
+        <label id="s-sens-wrap">Signification
+          <textarea name="signification" id="s-sens" rows="3" maxlength="1000"
+            placeholder="Que signifie ce prénom ? Dans quelle langue ? Est-il lié à une histoire, un rang de naissance…"></textarea>
+        </label>
+        <div class="row">
+          <label>Ethnie
+            <select name="ethnie" id="s-ethnie"></select>
+          </label>
+          <label>Genre
+            <select name="genre" id="s-genre">
+              <option value="">— Je ne sais pas —</option>
+              <option value="f">Fille</option>
+              <option value="m">Garçon</option>
+              <option value="x">Mixte</option>
+            </select>
+          </label>
+        </div>
+        <label><span>Autre graphie / prononciation <span class="opt">(facultatif)</span></span>
+          <input name="graphie" id="s-graphie" maxlength="120" placeholder="ex. Ngoné, Ngonė…">
+        </label>
+        <label><span>Commentaire ou source <span class="opt">(facultatif)</span></span>
+          <textarea name="commentaire" id="s-comment" rows="2" maxlength="1000"
+            placeholder="Comment le savez-vous ? (famille, livre, ancien du village…)"></textarea>
+        </label>
+        <div class="row">
+          <label><span>Votre nom <span class="opt">(facultatif)</span></span>
+            <input name="auteur" maxlength="80">
+          </label>
+          <label><span>Votre e-mail <span class="opt">(facultatif)</span></span>
+            <input name="email" type="email" maxlength="120">
+          </label>
+        </div>
+        <input type="hidden" name="prenom_id" id="s-id">
+      </div>
+      <footer class="dialog-foot">
+        <button type="button" class="btn-ghost" data-close>Annuler</button>
+        <button type="submit" class="btn-primary" id="s-submit">Envoyer la suggestion</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="data/prenoms.js"></script>
+  <script src="data/significations.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

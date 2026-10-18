@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suggestions — Prénoms Sénégalais</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin { margin-top: 32px; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+    .toolbar select { border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; background: #fff; }
+    .note { background: var(--yellow-soft); border-radius: 12px; padding: 12px 16px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: .92rem; }
+    th { background: var(--green-soft); color: var(--green-dark); font-weight: 600; white-space: nowrap; }
+    td.wide { min-width: 220px; }
+    .st { border: 1.5px solid var(--line); border-radius: 8px; padding: 4px 6px; background: #fff; }
+    .del { border: 0; background: none; color: var(--red); }
+    .empty { padding: 32px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="wrap admin">
+    <a href="index.html">← Retour au site</a>
+    <h1>Suggestions reçues</h1>
+    <p class="note">
+      Cette page affiche les suggestions enregistrées <strong>dans ce navigateur</strong>.
+      Pour recevoir celles de tous les visiteurs, renseignez <code>SUGGESTIONS_ENDPOINT</code> dans
+      <code>js/config.js</code> (voir le README).
+    </p>
+    <div class="toolbar">
+      <select id="filtre">
+        <option value="">Tous les statuts</option>
+        <option value="nouveau">Nouveau</option>
+        <option value="validé">Validé</option>
+        <option value="rejeté">Rejeté</option>
+      </select>
+      <button class="btn-ghost" id="export-json" type="button">Exporter en JSON</button>
+      <button class="btn-ghost" id="export-csv" type="button">Exporter en CSV</button>
+      <span class="muted" id="count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Prénom</th><th>Signification</th><th>Ethnie</th><th>Genre</th>
+            <th>Graphie</th><th>Commentaire</th><th>Auteur</th><th>Statut</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="data/prenoms.js"></script>
+  <script>
+    (() => {
+      const KEY = "ps-suggestions";
+      const TYPES = { definition: "Signification", modification: "Modification", nouveau: "Nouveau prénom" };
+      const GENRES = { f: "Fille", m: "Garçon", x: "Mixte" };
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+      const save = (v) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} };
+      let items = load();
+
+      function render() {
+        const f = document.getElementById("filtre").value;
+        const rows = items.map((s, i) => [s, i]).filter(([s]) => !f || s.statut === f).reverse();
+        document.getElementById("count").textContent = `${rows.length} suggestion(s)`;
+        document.getElementById("rows").innerHTML = rows.length ? rows.map(([s, i]) => `
+          <tr>
+            <td>${esc(new Date(s.date).toLocaleString("fr-FR"))}</td>
+            <td>${esc(TYPES[s.type] || s.type)}</td>
+            <td><strong>${esc(s.prenom)}</strong></td>
+            <td class="wide">${esc(s.signification)}</td>
+            <td>${esc(ETHNIES[s.ethnie]?.nom || s.ethnie)}</td>
+            <td>${esc(GENRES[s.genre] || "")}</td>
+            <td>${esc(s.graphie)}</td>
+            <td class="wide">${esc(s.commentaire)}</td>
+            <td>${esc(s.auteur)}${s.email ? `<br><a href="mailto:${esc(s.email)}">${esc(s.email)}</a>` : ""}</td>
+            <td><select class="st" data-i="${i}">
+              ${["nouveau", "validé", "rejeté"].map((v) => `<option${v === s.statut ? " selected" : ""}>${v}</option>`).join("")}
+            </select></td>
+            <td><button class="del" data-del="${i}" title="Supprimer">✕</button></td>
+          </tr>`).join("") : `<tr><td colspan="11" class="empty">Aucune suggestion pour le moment.</td></tr>`;
+      }
+
+      document.getElementById("rows").addEventListener("change", (e) => {
+        const i = e.target.dataset.i;
+        if (i !== undefined) { items[i].statut = e.target.value; save(items); render(); }
+      });
+      document.getElementById("rows").addEventListener("click", (e) => {
+        const i = e.target.dataset.del;
+        if (i !== undefined && confirm("Supprimer cette suggestion ?")) { items.splice(i, 1); save(items); render(); }
+      });
+      document.getElementById("filtre").addEventListener("change", render);
+
+      function download(name, content, type) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([content], { type }));
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      document.getElementById("export-json").addEventListener("click", () =>
+        download("suggestions-prenoms.json", JSON.stringify(items, null, 2), "application/json"));
+      document.getElementById("export-csv").addEventListener("click", () => {
+        const cols = ["date", "type", "prenom", "signification", "ethnie", "genre", "graphie", "commentaire", "auteur", "email", "statut"];
+        const csv = [cols.join(";")].concat(items.map((s) =>
+          cols.map((c) => `"${String(s[c] ?? "").replace(/"/g, '""')}"`).join(";"))).join("\n");
+        download("suggestions-prenoms.csv", "﻿" + csv, "text/csv");
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
