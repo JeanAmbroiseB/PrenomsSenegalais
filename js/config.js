@@ -12,8 +12,8 @@
  * navigateur de la personne qui les envoie (mode test).
  */
 const CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_KEY: ""
+  SUPABASE_URL: "https://cstdmoyyikrkxwnbhniw.supabase.co",
+  SUPABASE_KEY: "sb_publishable_VOTvTAVtWjJPRjIgHWM_1w_gAB1JQ37"
 };
 
 // Petit client commun au site et à la page d'administration.
@@ -29,7 +29,9 @@ const DB = {
   async requete(chemin, { method = "GET", body, token, prefer } = {}) {
     const headers = this.headers(token);
     if (prefer) headers.Prefer = prefer;
-    const res = await fetch(CONFIG.SUPABASE_URL.replace(/\/$/, "") + chemin, {
+    // Accepte aussi une adresse collée avec « /rest/v1/ » à la fin.
+    const base = CONFIG.SUPABASE_URL.trim().replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+    const res = await fetch(base + chemin, {
       method, headers, body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) {

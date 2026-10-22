@@ -150,7 +150,7 @@
   async function chargerContributions() {
     if (!DB.actif()) return;
     try {
-      const lignes = await DB.requete("/rest/v1/suggestions?select=id,type,prenom,prenom_id,signification,ethnie,genre,graphie,auteur,publie_le&statut=eq.publiee");
+      const lignes = await DB.requete("/rest/v1/suggestions?select=id,type,prenom,prenom_id,signification,ethnie,genre,graphie,auteur,publie_le");
       if (!lignes?.length) return;
       appliquerContributions(lignes);
       renderEthnieChips();
