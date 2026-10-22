@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
   <header class="site-header">
@@ -125,7 +125,10 @@
     <section class="wrap section" id="explorer">
       <div class="section-head">
         <h2>Explorer tous les prénoms</h2>
-        <button class="btn-ghost" type="button" data-propose>+ Proposer un nouveau prénom</button>
+        <div class="section-actions">
+          <a class="btn-ghost" href="prenom/index.html">Liste de A à Z</a>
+          <button class="btn-ghost" type="button" data-propose>+ Proposer un nouveau prénom</button>
+        </div>
       </div>
       <div class="filters">
         <input type="search" id="q" placeholder="Rechercher un prénom (ex. Ngoné, Sokhna, Koumba…)" autocomplete="off">
@@ -272,7 +275,8 @@
       <div>
         <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
         <p class="footer-thanks">Avec toute notre gratitude au Professeur Babacar Mbaye Diop, ainsi qu'à Djamil Faye,
-          Badou Dia et Ibrahima Fall, concepteurs du calendrier FayDiaFal. <a href="#apropos">Lire l'hommage</a></p>
+          Badou Dia et Ibrahima Fall, concepteurs du calendrier FayDiaFal. <a href="#apropos">Lire l'hommage</a>
+          · <a href="prenom/index.html">Tous les prénoms de A à Z</a></p>
       </div>
       <button class="btn-ghost light" type="button" data-propose>Proposer un prénom</button>
     </div>
@@ -344,9 +348,9 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=6"></script>
-  <script src="data/prenoms.js?v=6"></script>
-  <script src="data/significations.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="data/prenoms.js?v=7"></script>
+  <script src="data/significations.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

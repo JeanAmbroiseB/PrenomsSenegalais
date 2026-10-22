@@ -15,14 +15,33 @@ Puis ouvrir http://localhost:8080. On peut aussi ouvrir directement `index.html`
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | La page du site |
+| `index.html` | La page d'accueil (générateur, recherche) |
+| `prenom/` | Une page par prénom + la liste de A à Z (**générées**, ne pas modifier à la main) |
 | `admin.html` | Relecture et publication des propositions des visiteurs |
 | `data/prenoms.js` | La liste des prénoms (calendrier 2018 + autres prénoms) et les ethnies |
 | `data/significations.js` | Les significations : **c'est ici qu'on ajoute le sens des prénoms** |
 | `js/config.js` | Connexion à la base des suggestions (Supabase) |
 | `supabase/schema.sql` | Création de la base des suggestions |
 | `js/app.js` | Le fonctionnement du site |
+| `js/fiche.js` | Ajoute les contributions publiées sur les pages des prénoms |
+| `scripts/generer_pages.py` | Génère `prenom/*.html` et `sitemap.xml` à partir des données |
 | `css/style.css` | L'apparence |
+
+## Pages des prénoms (référencement Google)
+
+Chaque prénom a sa propre page, par ex. `prenom/ngoone-s.html`, pour que Google puisse la trouver
+(« signification prénom Ngoné »…). La liste complète est sur `prenom/index.html`, et `sitemap.xml`
+les déclare toutes. Ces fichiers sont **générés** à partir de `data/prenoms.js` et `data/significations.js` :
+
+**après chaque modification des fichiers de données, relancer :**
+
+```bash
+python3 scripts/generer_pages.py
+```
+
+puis envoyer sur GitHub (pages et `sitemap.xml` compris). Les propositions publiées depuis `admin.html`
+s'affichent déjà sur les pages des prénoms sans relancer le script ; pour qu'un prénom proposé par un
+visiteur ait sa propre page, il faut l'ajouter dans `data/prenoms.js` puis relancer le script.
 
 ## Ajouter une signification
 
@@ -32,10 +51,14 @@ Dans `data/significations.js`, ajouter une ligne avec le prénom écrit exacteme
 "Joor": { sens: "…", source: "…" },
 ```
 
+Puis relancer `python3 scripts/generer_pages.py` (voir plus haut).
+
 ## Corriger un prénom (ethnie, genre)
 
 Dans `data/prenoms.js`, chaque prénom est une ligne du type `["01-02","Joor","W","f"]` :
 date de fête, prénom, code ethnie, genre (`f` fille, `m` garçon, `x` mixte / non précisé).
+Changer l'écriture principale ou l'ethnie d'un prénom change aussi l'adresse de sa page :
+relancer `python3 scripts/generer_pages.py`, qui supprime l'ancienne page.
 
 ## Recevoir et publier les suggestions
 
@@ -75,7 +98,7 @@ qui les envoie (mode test).
 
 1. Acheter le domaine, puis l'ajouter dans Render : **Settings → Custom Domains** (suivre les DNS indiqués).
 2. Mettre à jour l'adresse officielle partout (balise canonique, partage, robots.txt, sitemap.xml,
-   redirection de l'ancienne adresse) en une commande :
+   pages des prénoms, redirection de l'ancienne adresse) en une commande :
    ```bash
    python3 scripts/changer_domaine.py prenoms.sn
    ```

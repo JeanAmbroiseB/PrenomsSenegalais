@@ -107,6 +107,9 @@
   const trier = () => NAMES.sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
   NAMES.forEach((n) => { n.sens = meaningOf(n); n.sensAutres = []; indexer(n); });
   trier();
+  // Ces prénoms ont aussi leur propre page, générée par scripts/generer_pages.py.
+  NAMES.forEach((n) => { n.page = true; });
+  const pageOf = (n) => `prenom/${n.id}.html`;
   const byId = new Map(NAMES.map((n) => [n.id, n]));
 
   // ---------- Contributions publiées (Supabase) ----------
@@ -286,6 +289,7 @@
         <button type="button" class="btn-action" data-act="share">Partager</button>
         <a class="btn-action" data-act="wa" target="_blank" rel="noopener"
            href="https://wa.me/?text=${encodeURIComponent(shareText(n))}">WhatsApp</a>
+        ${n.page ? `<a class="btn-action" href="${pageOf(n)}">Page du prénom</a>` : ""}
         <button type="button" class="btn-action suggest" data-act="suggest">
           ${sens ? "Suggérer une modification" : "Donner la signification / suggérer une modification"}</button>
       </div>`;
@@ -323,11 +327,20 @@
     $("#history").hidden = items.length === 0;
     $("#history-list").innerHTML = items.map(chipHtml).join("");
   }
-  const chipHtml = (n) => `<button type="button" class="name-chip ${n.g}" data-id="${esc(n.id)}">${esc(n.nom)}</button>`;
+  const chipHtml = (n) => n.page
+    ? `<a class="name-chip ${n.g}" href="${pageOf(n)}" data-id="${esc(n.id)}">${esc(n.nom)}</a>`
+    : `<button type="button" class="name-chip ${n.g}" data-id="${esc(n.id)}">${esc(n.nom)}</button>`;
+  // Les tuiles et pastilles sont des liens vers la page du prénom (utile aux moteurs de recherche et
+  // pour ouvrir dans un nouvel onglet) ; un simple clic affiche la fiche ici, comme avant.
+  const clicSimple = (ev) => !(ev.button || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey);
 
   $("#result").addEventListener("click", async (ev) => {
     const chip = ev.target.closest("[data-id]");
-    if (chip) return showName(byId.get(chip.dataset.id));
+    if (chip) {
+      if (!clicSimple(ev)) return;
+      ev.preventDefault();
+      return showName(byId.get(chip.dataset.id));
+    }
     const act = ev.target.closest("[data-act]")?.dataset.act;
     const n = state.current;
     if (!act || !n) return;
@@ -341,7 +354,10 @@
     if (act === "suggest") openSuggest(n.sens ? "modification" : "definition", n);
   });
 
-  function linkTo(n) { return location.href.split("#")[0] + "#p=" + encodeURIComponent(n.id); }
+  function linkTo(n) {
+    if (n.page) return new URL(pageOf(n), location.href).href;
+    return location.href.split("#")[0] + "#p=" + encodeURIComponent(n.id);
+  }
   function shareText(n) {
     const sens = n.sens ? ` — « ${n.sens.sens.replace(/\.$/, "")} »` : "";
     return `${n.nom} (${ETHNIES[n.e].nom})${sens}. Découvert sur Prénoms Sénégalais : ${linkTo(n)}`;
@@ -378,10 +394,11 @@
   // ---------- Explorer ----------
   function tileHtml(n) {
     const meta = [ETHNIES[n.e].nom, n.dates[0] ? formatDate(n.dates[0]) : ""].filter(Boolean).join(" · ");
-    return `<button type="button" class="name-tile" data-id="${esc(n.id)}" title="${esc(GENRES[n.g])}">
+    const [debut, fin] = n.page ? [`a href="${pageOf(n)}"`, "a"] : ['button type="button"', "button"];
+    return `<${debut} class="name-tile" data-id="${esc(n.id)}" title="${esc(GENRES[n.g])}">
       <span><span class="t-name">${esc(n.nom)}</span><span class="t-meta">${esc(meta)}</span></span>
       <span>${n.sens ? '<span class="has-sens" title="Signification connue">✦</span> ' : ""}<span class="dot ${n.g}"></span></span>
-    </button>`;
+    </${fin}>`;
   }
   function renderExplore() {
     const q = loose($("#q").value);
@@ -406,7 +423,8 @@
 
   function openFromTile(ev) {
     const t = ev.target.closest("[data-id]");
-    if (!t) return;
+    if (!t || !clicSimple(ev)) return;
+    ev.preventDefault();
     showName(byId.get(t.dataset.id));
     $("#result").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
   }
@@ -437,7 +455,7 @@
     $("#s-auteur").value = store.get(STORE.auteur, "");
     majApercu();
     updateSuggestTitle();
-    dlg.showModal();
+    if (!dlg.open) dlg.showModal();
     (n ? $("#s-sens") : $("#s-prenom")).focus();
   }
   function majApercu() { $("#s-apercu").textContent = $("#s-auteur").value.trim() || "Aly Diop"; }
@@ -528,10 +546,17 @@
     $("#stats").textContent = `${NAMES.length} prénoms référencés, dont ${withSens} avec une signification connue.`;
   }
 
+  // #p=<id> affiche une fiche ; #suggerer=<id> et #proposer (liens des pages prenom/) ouvrent le formulaire.
   function openFromHash() {
-    const m = location.hash.match(/^#p=(.+)$/);
-    const n = m && byId.get(decodeURIComponent(m[1]));
-    if (n) showName(n);
+    if (location.hash === "#proposer") {
+      history.replaceState(null, "", location.pathname + location.search);
+      return openSuggest("nouveau");
+    }
+    const m = location.hash.match(/^#(p|suggerer)=(.+)$/);
+    const n = m && byId.get(decodeURIComponent(m[2]));
+    if (!n) return;
+    showName(n);
+    if (m[1] === "suggerer") openSuggest(n.sens ? "modification" : "definition", n);
   }
   window.addEventListener("hashchange", openFromHash);
 

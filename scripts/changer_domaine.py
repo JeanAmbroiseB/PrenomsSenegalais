@@ -3,12 +3,14 @@
 Usage :  python3 scripts/changer_domaine.py prenoms.sn
 
 Met à jour la balise canonique, les balises de partage, les données structurées,
-robots.txt, sitemap.xml et la redirection automatique depuis l'ancienne adresse Render.
+robots.txt, sitemap.xml, les pages des prénoms (prenom/*.html) et la redirection automatique
+depuis l'ancienne adresse Render.
 Ensuite : vérifier, puis envoyer sur GitHub (Render republie le site).
 """
 import pathlib
 import re
 import sys
+import urllib.parse
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 FICHIERS = ["index.html", "admin.html", "robots.txt", "sitemap.xml"]
@@ -29,13 +31,22 @@ def main():
     if ancien == nouveau:
         sys.exit(f"Le site utilise déjà {nouveau}.")
 
-    for nom in FICHIERS:
+    pages = sorted(str(p.relative_to(RACINE)) for p in (RACINE / "prenom").glob("*.html"))
+    total = 0
+    for nom in FICHIERS + pages:
         chemin = RACINE / nom
         texte = chemin.read_text(encoding="utf-8")
-        modifie = texte.replace(ancien, nouveau)
+        # Les liens de partage WhatsApp des pages contiennent l'adresse encodée (https%3A%2F%2F…).
+        modifie = texte.replace(ancien, nouveau).replace(
+            urllib.parse.quote(ancien, safe=""), urllib.parse.quote(nouveau, safe=""))
         if modifie != texte:
             chemin.write_text(modifie, encoding="utf-8")
-            print(f"  {nom} : {texte.count(ancien)} remplacement(s)")
+            if nom in FICHIERS:
+                print(f"  {nom} : mis à jour")
+            else:
+                total += 1
+    if total:
+        print(f"  prenom/ : {total} page(s) mise(s) à jour")
     print(f"Adresse officielle : {ancien} -> {nouveau}")
 
 

@@ -110,7 +110,7 @@ kbd { background: var(--cream); border: 1px solid var(--line); border-radius: 6p
 .badge.x { background: #efece7; color: var(--muted); }
 .badge.fete { background: var(--yellow-soft); color: #7a5c00; }
 .meaning { border-left: 4px solid var(--yellow); background: var(--cream); border-radius: 0 12px 12px 0; padding: 14px 16px; }
-.meaning h4 { margin: 0 0 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.meaning h4, .meaning h2 { margin: 0 0 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .meaning p { margin: 0; font-size: 1.05rem; }
 .meaning .src { font-size: .8rem; color: var(--muted); margin-top: 6px; }
 .meaning.empty p { color: var(--muted); font-size: .95rem; }
@@ -243,3 +243,22 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--green); out
 .meaning-more h5 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .meaning-more p { font-size: .95rem; margin: 0 0 6px; }
 .meaning-more .par { display: inline; margin: 0; font-size: .82rem; }
+
+/* ---------- Pages des prénoms (prenom/*.html, générées) ---------- */
+a.name-tile, a.name-chip { color: inherit; text-decoration: none; }
+a.name-chip { display: inline-block; }
+a.name-chip.f { color: #a3121a; }
+.section-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+a.btn-ghost { display: inline-block; text-decoration: none; }
+.page { margin-top: 20px; }
+.breadcrumb { font-size: .88rem; color: var(--muted); margin-bottom: 14px; }
+.breadcrumb a { color: var(--muted); }
+.fiche { max-width: 760px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
+.fiche-intro { margin: 0; font-size: 1.05rem; }
+.fiche-more { margin-top: 14px; }
+.az-head .lead { margin-bottom: 14px; }
+.az-letters { display: flex; flex-wrap: wrap; gap: 6px; }
+.az-letters a { min-width: 36px; text-align: center; padding: 6px 8px; border-radius: 10px; background: var(--cream); font-weight: 600; text-decoration: none; color: var(--green-dark); }
+.az-letters a:hover { background: var(--green-soft); }
+.az-group { margin-top: 32px; }
+.az-group h2 { color: var(--green-dark); border-bottom: 2px solid var(--yellow); padding-bottom: 4px; }
