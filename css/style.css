@@ -220,3 +220,17 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--green); out
   html { scroll-behavior: auto; }
 }
 .name-src { font-size: .8rem; color: var(--muted); margin: 10px 0 0; }
+
+/* ---------- Hommage ---------- */
+.tribute { margin-bottom: 16px; border-top: 5px solid var(--yellow); background: linear-gradient(180deg, var(--yellow-soft), var(--paper) 140px); }
+.tribute-kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; font-weight: 600; color: #7a5c00; margin: 0 0 4px; }
+.tribute-title { font-size: clamp(1.3rem, 2.6vw, 1.7rem); color: var(--green-dark); margin-bottom: 10px; }
+.tribute-intro { font-size: 1.05rem; max-width: 70ch; margin: 0 0 20px; }
+.tribute-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.tribute-item { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.tribute-item h4 { margin: 0; font-size: 1.1rem; color: var(--green-dark); }
+.tribute-role { margin: 2px 0 10px; font-size: .85rem; color: var(--red); font-weight: 500; }
+.tribute-item p { margin: 0 0 10px; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--green); font-weight: 600; text-decoration: underline; }
+.footer-thanks { font-size: .88rem; opacity: .85; margin-top: 4px !important; }
+.footer-thanks a { color: var(--yellow); }

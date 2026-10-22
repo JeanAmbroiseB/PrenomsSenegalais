@@ -12,7 +12,7 @@
  * Sources (par ordre de priorité) :
  *   1. Calendrier du Pr Babacar Mbaye Diop (PRENOMS_CALENDRIER, PRENOMS_AUTRES) — fait foi.
  *   2. Contributions (PRENOMS_CONTRIBUTIONS).
- *   3. Calendrier FayDiaFal 2018 (PRENOMS_FAYDIAFAL), de D. Faye, A. B. Dia et I. Fall.
+ *   3. Calendrier FayDiaFal 2018 (PRENOMS_FAYDIAFAL), de Djamil Faye, Badou Dia et Ibrahima Fall.
  *   Quand deux prénoms se ressemblent, on garde l'écriture du Pr Diop et l'autre devient
  *   une « autre graphie » (AUTRES_GRAPHIES), utilisée aussi par la recherche.
  *

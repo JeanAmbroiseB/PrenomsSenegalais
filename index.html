@@ -131,19 +131,75 @@
 
     <section class="wrap section" id="apropos">
       <h2>À propos</h2>
+
+      <div class="tribute card">
+        <p class="tribute-kicker">Hommage et remerciements</p>
+        <h3 class="tribute-title">Ce site existe grâce à leur travail</h3>
+        <p class="tribute-intro">
+          Prénoms Sénégalais n'aurait jamais vu le jour sans des femmes et des hommes qui, bien avant nous, ont pris
+          le temps de recueillir, d'écrire et de transmettre les prénoms de nos ancêtres. Ce site ne cherche pas à
+          s'approprier leur travail : il veut au contraire <strong>le mettre en lumière</strong>, le faire connaître
+          au plus grand nombre et le prolonger. Toute la reconnaissance leur revient.
+        </p>
+
+        <div class="tribute-grid">
+          <article class="tribute-item">
+            <h4>Professeur Babacar Mbaye Diop</h4>
+            <p class="tribute-role">Faculté des Lettres et Sciences Humaines, Université Cheikh Anta Diop de Dakar</p>
+            <p>
+              Idée et conception du calendrier <em>« Pour la sauvegarde des prénoms sénégalais »</em> (2018),
+              réalisé avec le soutien de la Direction du Patrimoine Culturel du Ministère de la Culture.
+              Un prénom pour chaque jour de l'année, écrit dans l'orthographe de nos langues nationales et rattaché
+              à son peuple : wolof, sérère, diola, peul, toucouleur, mandingue, soninké, manjaque, bassari, lébou.
+            </p>
+            <p>
+              Ce travail patient de chercheur est le socle de ce site : c'est sa liste qui fait foi, ses dates de fête
+              qui rythment l'année et son écriture qui est retenue lorsque plusieurs graphies existent.
+              Nous lui devons une immense gratitude.
+            </p>
+          </article>
+
+          <article class="tribute-item">
+            <h4>Djamil Faye, Badou Dia et Ibrahima Fall</h4>
+            <p class="tribute-role">Concepteurs du calendrier FayDiaFal</p>
+            <p>
+              <em>FayDiaFal</em> réunit leurs trois noms de famille, et ce n'est pas un hasard : en wolof,
+              <em>Fey</em> signifie éteindre et <em>Jafal</em> allumer. Leur idée : rallumer ce qui est en train de
+              s'éteindre. Leur calendrier se bat contre la disparition progressive des prénoms de nos ancêtres
+              ceddo : wolof, pulaar, sérère, diola, socé, bassari, bedik, saraxolé, mankañ…
+            </p>
+            <p>
+              Une très belle démarche, qui a donné à ce site de nombreux prénoms et les écritures familières sous
+              lesquelles beaucoup d'entre nous les connaissent. Merci à eux d'avoir allumé cette flamme.
+            </p>
+          </article>
+
+          <article class="tribute-item">
+            <h4>Les créateurs du site et les contributeurs</h4>
+            <p class="tribute-role">Recherches, rapprochement des sources, significations</p>
+            <p>
+              Les créateurs de Prénoms Sénégalais ont réuni ces sources, comparé leurs écritures et recherché le sens
+              des prénoms, comme celui des prénoms sérères déjà présents ici. Chaque visiteur qui partage la
+              signification d'un prénom, une histoire ou une correction rejoint ce travail de transmission.
+            </p>
+            <p>
+              Vous connaissez le sens d'un prénom ? <button type="button" class="link-btn" data-propose>Partagez-le</button>.
+            </p>
+          </article>
+        </div>
+      </div>
+
       <div class="about-grid">
         <article class="card">
-          <h3>La source</h3>
-          <p>Les prénoms proviennent du calendrier <em>« Pour la sauvegarde des prénoms sénégalais »</em> (2018),
-            conçu par le Professeur Babacar Mbaye Diop (FLSH-UCAD), avec le soutien de la Direction du Patrimoine Culturel
-            du Ministère de la Culture. Chaque jour de l'année y porte un prénom : c'est la « date de fête » affichée ici.</p>
-          <p>Les prénoms du calendrier sans mention d'ethnie sont classés <strong>Wolof</strong> par défaut. Le genre
-            n'y est pas toujours indiqué : vous pouvez aider à le préciser grâce au bouton
+          <h3>Comment les prénoms sont présentés</h3>
+          <p>Chaque jour de l'année porte un prénom dans le calendrier du Pr Diop : c'est la « date de fête »
+            affichée sur les fiches. Les prénoms de ce calendrier sans mention d'ethnie sont classés
+            <strong>Wolof</strong> par défaut ; ceux qui viennent d'ailleurs restent « Non classé » tant que leur
+            ethnie n'est pas confirmée.</p>
+          <p>Quand un même prénom s'écrit de plusieurs façons, l'écriture du Pr Diop est retenue et les autres
+            sont indiquées comme « autres graphies ». Chaque fiche précise sa source.</p>
+          <p>Le genre n'est pas toujours connu : vous pouvez aider à le préciser grâce au bouton
             « Suggérer une modification ».</p>
-          <p>D'autres prénoms viennent du calendrier <em>FayDiaFal</em> (2018) de D. Faye, A. B. Dia et I. Fall
-            — « Fey » signifie éteindre et « Jafal » allumer : raviver ce qui s'éteint — et des contributions des
-            visiteurs. Quand deux écritures d'un même prénom existent, celle du Pr Diop est retenue et l'autre est
-            indiquée comme « autre graphie ».</p>
           <p class="muted" id="stats"></p>
         </article>
         <article class="card">
@@ -189,7 +245,11 @@
 
   <footer class="site-footer">
     <div class="wrap footer-inner">
-      <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
+      <div>
+        <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
+        <p class="footer-thanks">Avec toute notre gratitude au Professeur Babacar Mbaye Diop, ainsi qu'à Djamil Faye,
+          Badou Dia et Ibrahima Fall, concepteurs du calendrier FayDiaFal. <a href="#apropos">Lire l'hommage</a></p>
+      </div>
       <button class="btn-ghost light" type="button" data-propose>Proposer un prénom</button>
     </div>
   </footer>

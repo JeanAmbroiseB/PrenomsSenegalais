@@ -46,7 +46,13 @@ dans `js/config.js` :
 SUGGESTIONS_ENDPOINT: "https://formspree.io/f/xxxxxxx"
 ```
 
-## Source
+## Sources et remerciements
 
-Calendrier « Pour la sauvegarde des prénoms sénégalais » 2018 — Pr Babacar Mbaye Diop (FLSH-UCAD),
-Direction du Patrimoine Culturel, Ministère de la Culture.
+Ce site existe grâce au travail de :
+
+- **Professeur Babacar Mbaye Diop** (FLSH-UCAD) — calendrier « Pour la sauvegarde des prénoms sénégalais » (2018),
+  avec le soutien de la Direction du Patrimoine Culturel, Ministère de la Culture. C'est la source de référence.
+- **Djamil Faye, Badou Dia et Ibrahima Fall** — concepteurs du calendrier FayDiaFal (2018).
+- Les recherches des créateurs du site et les contributions des visiteurs.
+
+L'objectif n'est pas de s'approprier leur travail mais de le mettre en lumière et de le prolonger.

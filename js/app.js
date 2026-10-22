@@ -69,7 +69,7 @@
   const SOURCES = {
     diop: "Calendrier du Pr Babacar Mbaye Diop (2018)",
     contrib: "Contribution",
-    fdf: "Calendrier FayDiaFal (2018)"
+    fdf: "Calendrier FayDiaFal (2018) de Djamil Faye, Badou Dia et Ibrahima Fall"
   };
 
   function addName(nom, e, g, date, src) {
