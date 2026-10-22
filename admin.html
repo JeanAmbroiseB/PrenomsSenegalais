@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administration — Prénoms Sénégalais</title>
   <meta name="robots" content="noindex, nofollow">
+  <script>
+    // Adresse officielle du site. Si la page est ouverte depuis l'ancienne adresse Render,
+    // le visiteur est renvoyé vers l'adresse officielle (même page, même fiche).
+    // Pour changer de domaine : python3 scripts/changer_domaine.py nouveau-domaine.sn
+    (function () {
+      var OFFICIEL = "https://prenomssenegalais.onrender.com";
+      if (location.hostname.slice(-13) === ".onrender.com" && location.origin !== OFFICIEL) {
+        location.replace(OFFICIEL + location.pathname + location.search + location.hash);
+      }
+    })();
+  </script>
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=6">

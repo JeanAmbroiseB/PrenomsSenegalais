@@ -71,6 +71,18 @@ Ensuite, aller sur `https://…/admin.html` et se connecter.
 Tant que `js/config.js` n'est pas rempli, les propositions restent dans le navigateur de la personne
 qui les envoie (mode test).
 
+## Passer à un nom de domaine
+
+1. Acheter le domaine, puis l'ajouter dans Render : **Settings → Custom Domains** (suivre les DNS indiqués).
+2. Mettre à jour l'adresse officielle partout (balise canonique, partage, robots.txt, sitemap.xml,
+   redirection de l'ancienne adresse) en une commande :
+   ```bash
+   python3 scripts/changer_domaine.py prenoms.sn
+   ```
+3. Envoyer sur GitHub. Les visiteurs de l'ancienne adresse `onrender.com` sont alors renvoyés
+   automatiquement vers le nouveau domaine.
+4. Dans Google Search Console, ajouter le nouveau domaine et y déclarer `sitemap.xml`.
+
 ## Sources et remerciements
 
 Ce site existe grâce au travail de :
