@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <header class="site-header">
@@ -153,9 +153,8 @@
               à son peuple : wolof, sérère, diola, peul, toucouleur, mandingue, soninké, manjaque, bassari, lébou.
             </p>
             <p>
-              Ce travail patient de chercheur est le socle de ce site : c'est sa liste qui fait foi, ses dates de fête
-              qui rythment l'année et son écriture qui est retenue lorsque plusieurs graphies existent.
-              Nous lui devons une immense gratitude.
+              Ce travail patient de chercheur est au cœur de ce site, et ses dates de fête rythment l'année des
+              prénoms présentés ici. Nous lui devons une immense gratitude.
             </p>
           </article>
 
@@ -169,8 +168,9 @@
               ceddo : wolof, pulaar, sérère, diola, socé, bassari, bedik, saraxolé, mankañ…
             </p>
             <p>
-              Une très belle démarche, qui a donné à ce site de nombreux prénoms et les écritures familières sous
-              lesquelles beaucoup d'entre nous les connaissent. Merci à eux d'avoir allumé cette flamme.
+              Une très belle démarche, elle aussi au cœur de ce site : elle lui a apporté de nombreux prénoms et les
+              écritures familières sous lesquelles beaucoup d'entre nous les connaissent. Merci à eux d'avoir allumé
+              cette flamme.
             </p>
           </article>
 
@@ -194,10 +194,11 @@
           <h3>Comment les prénoms sont présentés</h3>
           <p>Chaque jour de l'année porte un prénom dans le calendrier du Pr Diop : c'est la « date de fête »
             affichée sur les fiches. Les prénoms de ce calendrier sans mention d'ethnie sont classés
-            <strong>Wolof</strong> par défaut ; ceux qui viennent d'ailleurs restent « Non classé » tant que leur
-            ethnie n'est pas confirmée.</p>
-          <p>Quand un même prénom s'écrit de plusieurs façons, l'écriture du Pr Diop est retenue et les autres
-            sont indiquées comme « autres graphies ». Chaque fiche précise sa source.</p>
+            <strong>Wolof</strong> par défaut ; les prénoms dont la source n'indique pas l'ethnie restent
+            « Non classé » tant qu'elle n'est pas confirmée.</p>
+          <p>Un même prénom s'écrit souvent de plusieurs façons : toutes ses écritures connues sont indiquées sur
+            sa fiche. Chaque fiche précise aussi sa source et, pour les contributions, le nom de la personne qui
+            l'a proposée.</p>
           <p>Le genre n'est pas toujours connu : vous pouvez aider à le préciser grâce au bouton
             « Suggérer une modification ».</p>
           <p class="muted" id="stats"></p>
@@ -296,15 +297,20 @@
           <textarea name="commentaire" id="s-comment" rows="2" maxlength="1000"
             placeholder="Comment le savez-vous ? (famille, livre, ancien du village…)"></textarea>
         </label>
-        <div class="row">
-          <label><span>Votre nom <span class="opt">(facultatif)</span></span>
-            <input name="auteur" maxlength="80">
-          </label>
-          <label><span>Votre e-mail <span class="opt">(facultatif)</span></span>
-            <input name="email" type="email" maxlength="120">
-          </label>
-        </div>
+        <label>Votre nom ou vos initiales
+          <input name="auteur" id="s-auteur" required maxlength="80" autocomplete="name"
+            placeholder="ex. Aly Diop ou A. D.">
+          <span class="field-hint">Il sera affiché avec votre contribution si elle est publiée :
+            « proposé par <b id="s-apercu">Aly Diop</b> ».</span>
+        </label>
+        <label><span>Votre e-mail <span class="opt">(facultatif, jamais affiché)</span></span>
+          <input name="email" type="email" maxlength="120" autocomplete="email"
+            placeholder="Pour vous recontacter si besoin">
+        </label>
+        <p class="field-hint">Chaque proposition est relue avant d'être publiée sur le site.</p>
         <input type="hidden" name="prenom_id" id="s-id">
+        <!-- Piège à robots : ce champ reste vide pour un humain. -->
+        <input type="text" name="site_web" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
       </div>
       <footer class="dialog-foot">
         <button type="button" class="btn-ghost" data-close>Annuler</button>
@@ -315,9 +321,9 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js"></script>
-  <script src="data/prenoms.js"></script>
-  <script src="data/significations.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="data/prenoms.js?v=5"></script>
+  <script src="data/significations.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

@@ -234,3 +234,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--green); out
 .link-btn { border: 0; background: none; padding: 0; color: var(--green); font-weight: 600; text-decoration: underline; }
 .footer-thanks { font-size: .88rem; opacity: .85; margin-top: 4px !important; }
 .footer-thanks a { color: var(--yellow); }
+
+/* ---------- Contributions ---------- */
+.field-hint { font-size: .82rem; color: var(--muted); font-weight: 400; margin: 0; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.meaning .par { font-size: .85rem; color: var(--green-dark); margin-top: 6px; font-weight: 500; }
+.meaning-more { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e6d9a8; }
+.meaning-more h5 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.meaning-more p { font-size: .95rem; margin: 0 0 6px; }
+.meaning-more .par { display: inline; margin: 0; font-size: .82rem; }

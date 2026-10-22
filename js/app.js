@@ -4,7 +4,7 @@
   const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
     "août", "septembre", "octobre", "novembre", "décembre"];
   const GENRES = { f: "Fille", m: "Garçon", x: "Genre à préciser" };
-  const STORE = { fav: "ps-favoris", hist: "ps-historique", sugg: "ps-suggestions" };
+  const STORE = { fav: "ps-favoris", hist: "ps-historique", sugg: "ps-suggestions", auteur: "ps-auteur" };
   const PAGE = 120;
 
   // ---------- Utilitaires ----------
@@ -88,7 +88,7 @@
     [nom, ...n.variantes].forEach((v) => seenNorm.add(norm(v)));
     NAMES.push(n);
   }
-  // Ordre de priorité : le calendrier du Pr Diop fait foi, puis les contributions, puis FayDiaFal.
+  // Préséance (ordre d'ajout des sources) : Pr Diop, contributions, FayDiaFal.
   PRENOMS_CALENDRIER.forEach(([d, nom, e, g]) => addName(nom, e, g, d, "diop"));
   const addIfNew = (src) => ([nom, e, g]) => { if (!seenNorm.has(norm(nom))) addName(nom, e, g, null, src); };
   PRENOMS_AUTRES.forEach(addIfNew("diop"));
@@ -100,13 +100,66 @@
     if (!raw) return null;
     return typeof raw === "string" ? { sens: raw } : raw;
   }
-  NAMES.forEach((n) => {
-    n.sens = meaningOf(n);
+  function indexer(n) {
     n.searchNoms = [n.nom, ...n.variantes, n.fr || ""].filter(Boolean).flatMap((v) => [norm(v), loose(v)]);
-    n.searchSens = n.sens ? loose(n.sens.sens) : "";
-  });
-  NAMES.sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
+    n.searchSens = [n.sens, ...n.sensAutres].filter(Boolean).map((x) => loose(x.sens)).join(" ");
+  }
+  const trier = () => NAMES.sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
+  NAMES.forEach((n) => { n.sens = meaningOf(n); n.sensAutres = []; indexer(n); });
+  trier();
   const byId = new Map(NAMES.map((n) => [n.id, n]));
+
+  // ---------- Contributions publiées (Supabase) ----------
+  // Elles complètent les données sans jamais les remplacer : une signification déjà connue reste
+  // affichée en premier, une nouvelle écriture devient une « autre graphie ».
+  function trouverPrenom(id, nom) {
+    if (id && byId.has(id)) return byId.get(id);
+    const k = norm(nom);
+    return NAMES.find((n) => norm(n.nom) === k || n.variantes.some((v) => norm(v) === k));
+  }
+  function appliquerContributions(lignes) {
+    lignes.sort((a, b) => String(a.publie_le).localeCompare(String(b.publie_le)));
+    for (const c of lignes) {
+      if (!c.prenom) continue;
+      let n = trouverPrenom(c.prenom_id, c.prenom);
+      if (!n) {
+        const e = ETHNIES[c.ethnie] ? c.ethnie : "NC";
+        addName(c.prenom.trim(), e, c.genre || "x", null, "contrib");
+        n = NAMES[NAMES.length - 1];
+        n.sens = null; n.sensAutres = []; n.par = c.auteur || null;
+        byId.set(n.id, n);
+      } else {
+        if (c.genre && n.g === "x") n.g = c.genre;
+        if (c.ethnie && ETHNIES[c.ethnie] && n.e === "NC") n.e = c.ethnie;
+        if (c.prenom_id !== n.id && norm(c.prenom) !== norm(n.nom) && !n.variantes.some((v) => norm(v) === norm(c.prenom))) {
+          n.variantes.push(c.prenom.trim());
+        }
+      }
+      String(c.graphie || "").split(/[,;\/]/).map((v) => v.trim()).filter(Boolean).forEach((v) => {
+        if (norm(v) !== norm(n.nom) && !n.variantes.some((x) => norm(x) === norm(v))) n.variantes.push(v);
+      });
+      if (c.signification) {
+        const entree = { sens: c.signification.trim(), source: "Contribution", par: c.auteur || null };
+        const deja = [n.sens, ...n.sensAutres].some((x) => x && loose(x.sens) === loose(entree.sens));
+        if (!deja) { if (!n.sens) n.sens = entree; else n.sensAutres.push(entree); }
+      }
+      indexer(n);
+    }
+    trier();
+  }
+  async function chargerContributions() {
+    if (!DB.actif()) return;
+    try {
+      const lignes = await DB.requete("/rest/v1/suggestions?select=id,type,prenom,prenom_id,signification,ethnie,genre,graphie,auteur,publie_le&statut=eq.publiee");
+      if (!lignes?.length) return;
+      appliquerContributions(lignes);
+      renderEthnieChips();
+      renderExplore();
+      renderFavs();
+      initStats();
+      if (state.current) showName(state.current); else openFromHash();
+    } catch { /* hors ligne : on garde les données du site */ }
+  }
 
   // ---------- État ----------
   const state = {
@@ -114,8 +167,8 @@
     sexe: "all",
     inclureX: true,
     current: null,
-    history: store.get(STORE.hist, []).filter((id) => byId.has(id)),
-    favs: new Set(store.get(STORE.fav, []).filter((id) => byId.has(id))),
+    history: store.get(STORE.hist, []),        // les identifiants inconnus sont ignorés à l'affichage
+    favs: new Set(store.get(STORE.fav, [])),
     exploreLimit: PAGE
   };
 
@@ -216,13 +269,15 @@
           <span class="badge ${n.g}">${GENRES[n.g]}</span>
           ${dates ? `<span class="badge fete">Fêté le ${dates}</span>` : ""}
         </div>
-        <p class="name-src">Source : ${esc(SOURCES[n.src])}</p>
+        <p class="name-src">${n.par ? `Proposé par ${esc(n.par)}` : `Source : ${esc(SOURCES[n.src])}`}</p>
       </div>
       <div class="meaning${sens ? "" : " empty"}">
         <h4>Signification</h4>
         ${sens
-          ? `<p>${esc(sens.sens)}</p>${sens.source ? `<p class="src">Source : ${esc(sens.source)}</p>` : ""}`
+          ? `<p>${esc(sens.sens)}</p>${creditSens(sens)}`
           : `<p>La signification de ce prénom n'est pas encore renseignée. Vous la connaissez ? Partagez-la !</p>`}
+        ${n.sensAutres.length ? `<div class="meaning-more"><h5>Autres éclairages</h5>${n.sensAutres
+          .map((x) => `<p>${esc(x.sens)} ${x.par ? `<span class="par">— proposé par ${esc(x.par)}</span>` : ""}</p>`).join("")}</div>` : ""}
       </div>
       <div class="actions">
         <button type="button" class="btn-action fav${state.favs.has(n.id) ? " on" : ""}" data-act="fav">
@@ -246,6 +301,11 @@
     if (window.matchMedia("(max-width: 860px)").matches) {
       $("#result").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     }
+  }
+
+  function creditSens(x) {
+    if (x.par) return `<p class="par">Proposée par ${esc(x.par)}</p>`;
+    return x.source ? `<p class="src">Source : ${esc(x.source)}</p>` : "";
   }
 
   function renderOthers(n) {
@@ -309,7 +369,7 @@
     c.textContent = list.length;
   }
   $("#fav-share").addEventListener("click", () => {
-    const list = [...state.favs].map((id) => byId.get(id).nom).join(", ");
+    const list = [...state.favs].map((id) => byId.get(id)?.nom).filter(Boolean).join(", ");
     const text = `Mes prénoms sénégalais préférés : ${list}. ${location.href.split("#")[0]}`;
     if (navigator.share) navigator.share({ title: "Mes prénoms préférés", text }).catch(() => {});
     else copy(text, "Liste copiée");
@@ -374,10 +434,14 @@
     $("#s-ethnie").value = n && n.e !== "NC" ? n.e : "";
     $("#s-genre").value = n ? n.g : "";
     if (n && n.sens && type !== "nouveau") $("#s-sens").value = n.sens.sens;
+    $("#s-auteur").value = store.get(STORE.auteur, "");
+    majApercu();
     updateSuggestTitle();
     dlg.showModal();
     (n ? $("#s-sens") : $("#s-prenom")).focus();
   }
+  function majApercu() { $("#s-apercu").textContent = $("#s-auteur").value.trim() || "Aly Diop"; }
+  $("#s-auteur").addEventListener("input", majApercu);
   function updateSuggestTitle() { $("#suggest-title").textContent = TITRES[$("#s-type").value]; }
   $("#s-type").addEventListener("change", updateSuggestTitle);
   document.querySelectorAll("[data-propose]").forEach((b) => b.addEventListener("click", () => openSuggest("nouveau")));
@@ -398,31 +462,43 @@
       (original && (data.ethnie !== (original.e === "NC" ? "" : original.e) || data.genre !== original.g));
     if (!changed && data.type !== "nouveau") return toast("Aucune modification à envoyer");
 
-    data.date = new Date().toISOString();
-    data.statut = "nouveau";
-    const saved = store.get(STORE.sugg, []);
-    saved.push(data);
-    store.set(STORE.sugg, saved);
+    if (data.site_web) { dlg.close(); return toast("Merci !"); } // robot
+    store.set(STORE.auteur, data.auteur);
 
-    let msg = "Merci ! Votre suggestion a bien été enregistrée.";
-    if (CONFIG.SUGGESTIONS_ENDPOINT) {
-      const btn = $("#s-submit");
-      btn.disabled = true;
-      try {
-        const res = await fetch(CONFIG.SUGGESTIONS_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ ...data, _subject: `Prénoms Sénégalais — ${TITRES[data.type]} : ${data.prenom}` })
-        });
-        if (!res.ok) throw new Error(res.status);
-        msg = "Merci ! Votre suggestion a été envoyée.";
-      } catch {
-        msg = "Suggestion enregistrée, mais l'envoi a échoué. Réessayez plus tard.";
-      } finally {
-        btn.disabled = false;
+    // Seuls les champs utiles sont envoyés ; une signification inchangée n'est pas renvoyée.
+    const vide = (v) => (v ? v : null);
+    const envoi = {
+      type: data.type,
+      prenom: data.prenom,
+      prenom_id: vide(data.prenom_id),
+      signification: data.signification !== (original?.sens?.sens ?? "") ? vide(data.signification) : null,
+      ethnie: original && data.ethnie === (original.e === "NC" ? "" : original.e) ? null : vide(data.ethnie),
+      genre: original && data.genre === original.g ? null : vide(data.genre),
+      graphie: vide(data.graphie),
+      commentaire: vide(data.commentaire),
+      auteur: vide(data.auteur),
+      email: vide(data.email)
+    };
+
+    const btn = $("#s-submit");
+    btn.disabled = true;
+    let msg;
+    try {
+      if (DB.actif()) {
+        await DB.requete("/rest/v1/suggestions", { method: "POST", body: envoi, prefer: "return=minimal" });
+        msg = "Merci ! Votre proposition a été envoyée. Elle sera publiée après relecture.";
+      } else {
+        const saved = store.get(STORE.sugg, []);
+        saved.push({ ...envoi, created_at: new Date().toISOString(), statut: "en_attente" });
+        store.set(STORE.sugg, saved);
+        msg = "Merci ! Votre proposition a bien été enregistrée.";
       }
+      dlg.close();
+    } catch {
+      msg = "L'envoi a échoué. Vérifiez votre connexion et réessayez.";
+    } finally {
+      btn.disabled = false;
     }
-    dlg.close();
     toast(msg);
   });
 
@@ -465,4 +541,5 @@
   initToday();
   initStats();
   openFromHash();
+  chargerContributions();
 })();

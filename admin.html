@@ -3,118 +3,296 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Suggestions — Prénoms Sénégalais</title>
-  <meta name="robots" content="noindex">
+  <title>Administration — Prénoms Sénégalais</title>
+  <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=5">
   <style>
-    .admin { margin-top: 32px; }
-    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
-    .toolbar select { border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; background: #fff; }
-    .note { background: var(--yellow-soft); border-radius: 12px; padding: 12px 16px; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
-    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: .92rem; }
-    th { background: var(--green-soft); color: var(--green-dark); font-weight: 600; white-space: nowrap; }
-    td.wide { min-width: 220px; }
-    .st { border: 1.5px solid var(--line); border-radius: 8px; padding: 4px 6px; background: #fff; }
-    .del { border: 0; background: none; color: var(--red); }
+    .admin { margin-top: 28px; margin-bottom: 48px; }
+    .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .note { background: var(--yellow-soft); border-radius: 12px; padding: 12px 16px; margin: 16px 0; }
+    .login { max-width: 420px; margin: 40px auto; display: flex; flex-direction: column; gap: 14px; }
+    .login label, .sugg label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; font-size: .9rem; }
+    .login input, .sugg input, .sugg select, .sugg textarea {
+      border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; background: #fff; width: 100%; font: inherit;
+    }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
+    .tabs button { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 16px; font-weight: 500; }
+    .tabs button.on { background: var(--green); color: #fff; border-color: var(--green); }
+    .tabs .n { opacity: .75; margin-left: 4px; }
+    .list { display: flex; flex-direction: column; gap: 14px; }
+    .sugg { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; }
+    .sugg-head { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+    .sugg-head h3 { margin: 0; font-size: 1.3rem; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    .fields { display: flex; flex-direction: column; gap: 10px; }
+    .fields .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ctx { background: var(--cream); border-radius: 12px; padding: 14px; font-size: .9rem; }
+    .ctx h4 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .ctx p { margin: 0 0 8px; }
+    .warn { color: #7a5c00; background: var(--yellow-soft); border-radius: 8px; padding: 8px 10px; }
+    .private { border-left: 3px solid var(--line); padding-left: 10px; color: var(--muted); }
+    .btns { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-danger { border: 1.5px solid var(--red); color: var(--red); background: transparent; border-radius: 999px; padding: 8px 16px; font-weight: 600; }
+    .tag { border-radius: 999px; padding: 2px 10px; font-size: .78rem; font-weight: 600; background: var(--green-soft); color: var(--green-dark); }
     .empty { padding: 32px; text-align: center; color: var(--muted); }
+    @media (max-width: 760px) { .sugg { grid-template-columns: 1fr; } .fields .row2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <main class="wrap admin">
-    <a href="index.html">← Retour au site</a>
-    <h1>Suggestions reçues</h1>
-    <p class="note">
-      Cette page affiche les suggestions enregistrées <strong>dans ce navigateur</strong>.
-      Pour recevoir celles de tous les visiteurs, renseignez <code>SUGGESTIONS_ENDPOINT</code> dans
-      <code>js/config.js</code> (voir le README).
-    </p>
-    <div class="toolbar">
-      <select id="filtre">
-        <option value="">Tous les statuts</option>
-        <option value="nouveau">Nouveau</option>
-        <option value="validé">Validé</option>
-        <option value="rejeté">Rejeté</option>
-      </select>
-      <button class="btn-ghost" id="export-json" type="button">Exporter en JSON</button>
-      <button class="btn-ghost" id="export-csv" type="button">Exporter en CSV</button>
-      <span class="muted" id="count"></span>
+    <div class="admin-head">
+      <div>
+        <a href="index.html">← Retour au site</a>
+        <h1>Propositions des visiteurs</h1>
+      </div>
+      <div id="who" hidden><span class="meta" id="who-email"></span>
+        <button class="btn-ghost" id="logout" type="button">Se déconnecter</button></div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Type</th><th>Prénom</th><th>Signification</th><th>Ethnie</th><th>Genre</th>
-            <th>Graphie</th><th>Commentaire</th><th>Auteur</th><th>Statut</th><th></th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+
+    <!-- Base non configurée -->
+    <div id="setup" hidden>
+      <p class="note">La base de suggestions (Supabase) n'est pas encore configurée : voir le README, partie
+        « Recevoir et publier les suggestions ». En attendant, voici les propositions envoyées depuis
+        <strong>ce navigateur</strong> uniquement.</p>
+      <div class="list" id="local-list"></div>
     </div>
+
+    <!-- Connexion -->
+    <form class="login card" id="login" hidden>
+      <h2>Connexion</h2>
+      <label>E-mail <input type="email" id="l-email" required autocomplete="username"></label>
+      <label>Mot de passe <input type="password" id="l-pass" required autocomplete="current-password"></label>
+      <button class="btn-primary" type="submit">Se connecter</button>
+      <p class="meta" id="l-err"></p>
+    </form>
+
+    <!-- Tableau de bord -->
+    <section id="board" hidden>
+      <p class="note">Relisez chaque proposition, corrigez-la si besoin, puis publiez-la : elle apparaît aussitôt sur
+        le site avec le nom de son auteur. Une signification déjà présente sur le site reste affichée en premier ;
+        la nouvelle s'ajoute dans « Autres éclairages ». Une nouvelle écriture devient une « autre graphie ».</p>
+      <div class="tabs" id="tabs">
+        <button type="button" data-s="en_attente" class="on">À relire<span class="n"></span></button>
+        <button type="button" data-s="publiee">Publiées<span class="n"></span></button>
+        <button type="button" data-s="rejetee">Rejetées<span class="n"></span></button>
+        <button type="button" class="btn-ghost" id="refresh">Actualiser</button>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
   </main>
 
-  <script src="data/prenoms.js"></script>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="js/config.js?v=5"></script>
+  <script src="data/prenoms.js?v=5"></script>
+  <script src="data/significations.js?v=5"></script>
   <script>
     (() => {
-      const KEY = "ps-suggestions";
-      const TYPES = { definition: "Signification", modification: "Modification", nouveau: "Nouveau prénom" };
-      const GENRES = { f: "Fille", m: "Garçon", x: "Mixte" };
+      const $ = (s) => document.querySelector(s);
       const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-      const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
-      const save = (v) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} };
-      let items = load();
+      const norm = (s) => String(s).toLowerCase().replace(/ŋ/g, "ng")
+        .normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+      const TYPES = { definition: "Signification", modification: "Modification", nouveau: "Nouveau prénom" };
+      const GENRES = { f: "Fille", m: "Garçon", x: "Mixte" };
+      const SESSION = "ps-admin-session";
 
-      function render() {
-        const f = document.getElementById("filtre").value;
-        const rows = items.map((s, i) => [s, i]).filter(([s]) => !f || s.statut === f).reverse();
-        document.getElementById("count").textContent = `${rows.length} suggestion(s)`;
-        document.getElementById("rows").innerHTML = rows.length ? rows.map(([s, i]) => `
-          <tr>
-            <td>${esc(new Date(s.date).toLocaleString("fr-FR"))}</td>
-            <td>${esc(TYPES[s.type] || s.type)}</td>
-            <td><strong>${esc(s.prenom)}</strong></td>
-            <td class="wide">${esc(s.signification)}</td>
-            <td>${esc(ETHNIES[s.ethnie]?.nom || s.ethnie)}</td>
-            <td>${esc(GENRES[s.genre] || "")}</td>
-            <td>${esc(s.graphie)}</td>
-            <td class="wide">${esc(s.commentaire)}</td>
-            <td>${esc(s.auteur)}${s.email ? `<br><a href="mailto:${esc(s.email)}">${esc(s.email)}</a>` : ""}</td>
-            <td><select class="st" data-i="${i}">
-              ${["nouveau", "validé", "rejeté"].map((v) => `<option${v === s.statut ? " selected" : ""}>${v}</option>`).join("")}
-            </select></td>
-            <td><button class="del" data-del="${i}" title="Supprimer">✕</button></td>
-          </tr>`).join("") : `<tr><td colspan="11" class="empty">Aucune suggestion pour le moment.</td></tr>`;
+      let toastTimer;
+      function toast(msg) {
+        const t = $("#toast"); t.textContent = msg; t.hidden = false;
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
       }
 
-      document.getElementById("rows").addEventListener("change", (e) => {
-        const i = e.target.dataset.i;
-        if (i !== undefined) { items[i].statut = e.target.value; save(items); render(); }
-      });
-      document.getElementById("rows").addEventListener("click", (e) => {
-        const i = e.target.dataset.del;
-        if (i !== undefined && confirm("Supprimer cette suggestion ?")) { items.splice(i, 1); save(items); render(); }
-      });
-      document.getElementById("filtre").addEventListener("change", render);
+      // ---------- Ce que le site affiche déjà pour un prénom ----------
+      const connus = new Map();
+      const ajouter = (nom, e, src) => {
+        const fiche = { nom, e, src, graphies: AUTRES_GRAPHIES[nom] || [] };
+        [nom, ...fiche.graphies].forEach((v) => { if (!connus.has(norm(v))) connus.set(norm(v), fiche); });
+      };
+      PRENOMS_CALENDRIER.forEach(([, nom, e]) => ajouter(nom, e, "Calendrier du Pr Diop"));
+      PRENOMS_AUTRES.forEach(([nom, e]) => ajouter(nom, e, "Calendrier du Pr Diop"));
+      PRENOMS_CONTRIBUTIONS.forEach(([nom, e]) => ajouter(nom, e, "Contribution"));
+      PRENOMS_FAYDIAFAL.forEach(([nom, e]) => ajouter(nom, e, "Calendrier FayDiaFal"));
 
-      function download(name, content, type) {
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([content], { type }));
-        a.download = name;
-        a.click();
-        URL.revokeObjectURL(a.href);
+      function contexte(s) {
+        const fiche = connus.get(norm(s.prenom));
+        if (!fiche) return `<p><strong>Prénom absent du site</strong> : il sera ajouté à la publication.</p>`;
+        const sig = SIGNIFICATIONS[fiche.nom] || fiche.graphies.map((g) => SIGNIFICATIONS[g]).find(Boolean);
+        const sens = typeof sig === "string" ? { sens: sig } : sig;
+        return `
+          <p>Sur le site : <strong>${esc(fiche.nom)}</strong> (${esc(ETHNIES[fiche.e]?.nom || fiche.e)}) — ${esc(fiche.src)}</p>
+          ${fiche.graphies.length ? `<p>Autres graphies : ${fiche.graphies.map(esc).join(", ")}</p>` : ""}
+          ${sens ? `<p>Signification actuelle : « ${esc(sens.sens)} »${sens.source ? ` <span class="meta">(${esc(sens.source)})</span>` : ""}</p>
+            ${s.signification ? `<p class="warn">Une signification existe déjà : elle reste en premier, la nouvelle sera ajoutée dans « Autres éclairages ».</p>` : ""}`
+            : `<p>Pas encore de signification sur le site.</p>`}
+          ${s.ethnie && fiche.e !== "NC" && s.ethnie !== fiche.e ? `<p class="warn">Ethnie différente proposée : elle n'est appliquée automatiquement que pour un prénom « Non classé ». Pour changer l'ethnie d'un prénom des calendriers, une modification des données est nécessaire.</p>` : ""}`;
       }
-      document.getElementById("export-json").addEventListener("click", () =>
-        download("suggestions-prenoms.json", JSON.stringify(items, null, 2), "application/json"));
-      document.getElementById("export-csv").addEventListener("click", () => {
-        const cols = ["date", "type", "prenom", "signification", "ethnie", "genre", "graphie", "commentaire", "auteur", "email", "statut"];
-        const csv = [cols.join(";")].concat(items.map((s) =>
-          cols.map((c) => `"${String(s[c] ?? "").replace(/"/g, '""')}"`).join(";"))).join("\n");
-        download("suggestions-prenoms.csv", "﻿" + csv, "text/csv");
+
+      // ---------- Mode test (base non configurée) ----------
+      if (!DB.actif()) {
+        $("#setup").hidden = false;
+        let items = [];
+        try { items = JSON.parse(localStorage.getItem("ps-suggestions")) || []; } catch { /* vide */ }
+        $("#local-list").innerHTML = items.length ? items.slice().reverse().map((s) => `
+          <article class="card">
+            <div class="sugg-head"><h3>${esc(s.prenom)}</h3>
+              <span class="meta">${esc(TYPES[s.type] || s.type)} · ${esc(new Date(s.created_at || s.date).toLocaleString("fr-FR"))}
+              · proposé par ${esc(s.auteur || "—")}</span></div>
+            ${s.signification ? `<p>${esc(s.signification)}</p>` : ""}
+            ${s.graphie ? `<p class="meta">Graphie : ${esc(s.graphie)}</p>` : ""}
+            ${s.commentaire ? `<p class="private">${esc(s.commentaire)}</p>` : ""}
+          </article>`).join("") : `<p class="empty">Aucune proposition sur ce navigateur.</p>`;
+        return;
+      }
+
+      // ---------- Session ----------
+      const lireSession = () => { try { return JSON.parse(sessionStorage.getItem(SESSION)); } catch { return null; } };
+      let session = lireSession();
+      if (session && session.expires_at * 1000 < Date.now()) session = null;
+
+      function afficher() {
+        const ok = Boolean(session);
+        $("#login").hidden = ok;
+        $("#board").hidden = !ok;
+        $("#who").hidden = !ok;
+        if (ok) { $("#who-email").textContent = session.email + " "; charger(); }
+      }
+
+      $("#login").addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        $("#l-err").textContent = "";
+        try {
+          const r = await DB.requete("/auth/v1/token?grant_type=password", {
+            method: "POST", body: { email: $("#l-email").value.trim(), password: $("#l-pass").value }
+          });
+          session = { token: r.access_token, expires_at: r.expires_at, email: r.user?.email };
+          try { sessionStorage.setItem(SESSION, JSON.stringify(session)); } catch { /* navigation privée */ }
+          $("#l-pass").value = "";
+          afficher();
+        } catch (e) {
+          $("#l-err").textContent = e.status === 400 ? "E-mail ou mot de passe incorrect." : "Connexion impossible pour le moment.";
+        }
+      });
+      $("#logout").addEventListener("click", () => {
+        session = null;
+        try { sessionStorage.removeItem(SESSION); } catch { /* rien */ }
+        afficher();
       });
 
-      render();
+      async function api(chemin, opts = {}) {
+        try {
+          return await DB.requete(chemin, { ...opts, token: session.token });
+        } catch (e) {
+          if (e.status === 401) { toast("Session expirée, reconnectez-vous."); $("#logout").click(); }
+          throw e;
+        }
+      }
+
+      // ---------- Liste ----------
+      let toutes = [];
+      let onglet = "en_attente";
+
+      async function charger() {
+        try {
+          toutes = await api("/rest/v1/suggestions?select=*&order=created_at.desc&limit=2000") || [];
+        } catch (e) {
+          if (e.status !== 401) toast(e.status === 403 || e.status === 404
+            ? "Accès refusé : ce compte n'est pas administrateur (voir README)."
+            : "Impossible de charger les propositions.");
+          toutes = [];
+        }
+        rendre();
+      }
+
+      function rendre() {
+        document.querySelectorAll("#tabs [data-s]").forEach((b) => {
+          b.classList.toggle("on", b.dataset.s === onglet);
+          b.querySelector(".n").textContent = " " + toutes.filter((s) => s.statut === b.dataset.s).length;
+        });
+        const liste = toutes.filter((s) => s.statut === onglet);
+        const optE = (v) => `<option value="">—</option>` + Object.entries(ETHNIES)
+          .map(([c, e]) => `<option value="${c}"${c === v ? " selected" : ""}>${esc(e.nom)}</option>`).join("") +
+          (v && !ETHNIES[v] ? `<option value="${esc(v)}" selected>${esc(v)}</option>` : "");
+        const optG = (v) => `<option value="">—</option>` + Object.entries(GENRES)
+          .map(([c, g]) => `<option value="${c}"${c === v ? " selected" : ""}>${g}</option>`).join("");
+        $("#list").innerHTML = liste.length ? liste.map((s) => `
+          <article class="card sugg" data-id="${esc(s.id)}">
+            <div class="sugg-head">
+              <h3>${esc(s.prenom)} <span class="tag">${esc(TYPES[s.type] || s.type)}</span></h3>
+              <span class="meta">Reçu le ${esc(new Date(s.created_at).toLocaleString("fr-FR"))}
+                ${s.publie_le ? ` · publié le ${esc(new Date(s.publie_le).toLocaleDateString("fr-FR"))}` : ""}</span>
+            </div>
+            <div class="fields">
+              <label>Prénom <input data-f="prenom" value="${esc(s.prenom)}" maxlength="80"></label>
+              <label>Signification <textarea data-f="signification" rows="3" maxlength="1000">${esc(s.signification)}</textarea></label>
+              <label>Autres graphies (séparées par des virgules) <input data-f="graphie" value="${esc(s.graphie)}" maxlength="120"></label>
+              <div class="row2">
+                <label>Ethnie <select data-f="ethnie">${optE(s.ethnie)}</select></label>
+                <label>Genre <select data-f="genre">${optG(s.genre)}</select></label>
+              </div>
+              <label>Affiché comme « proposé par » <input data-f="auteur" value="${esc(s.auteur)}" maxlength="80"></label>
+              <label>Note pour moi (jamais affichée) <input data-f="note_admin" value="${esc(s.note_admin)}"></label>
+            </div>
+            <div class="ctx">
+              <h4>Sur le site</h4>
+              ${contexte(s)}
+              <h4>Message de la personne</h4>
+              <p class="private">${s.commentaire ? esc(s.commentaire) : "—"}</p>
+              ${s.email ? `<p>Contact : <a href="mailto:${esc(s.email)}">${esc(s.email)}</a></p>` : ""}
+            </div>
+            <div class="btns">
+              <button type="button" class="btn-danger" data-act="supprimer">Supprimer</button>
+              ${s.statut !== "rejetee" ? `<button type="button" class="btn-ghost" data-act="rejetee">Rejeter</button>` : ""}
+              ${s.statut !== "en_attente" ? `<button type="button" class="btn-ghost" data-act="en_attente">Remettre à relire</button>` : ""}
+              <button type="button" class="btn-ghost" data-act="enregistrer">Enregistrer</button>
+              ${s.statut !== "publiee" ? `<button type="button" class="btn-primary" data-act="publiee">Publier</button>` : ""}
+            </div>
+          </article>`).join("") : `<p class="empty">Aucune proposition ici.</p>`;
+      }
+
+      $("#tabs").addEventListener("click", (ev) => {
+        const b = ev.target.closest("[data-s]");
+        if (b) { onglet = b.dataset.s; rendre(); }
+      });
+      $("#refresh").addEventListener("click", charger);
+
+      $("#list").addEventListener("click", async (ev) => {
+        const btn = ev.target.closest("[data-act]");
+        if (!btn) return;
+        const carte = btn.closest("[data-id]");
+        const id = carte.dataset.id;
+        const act = btn.dataset.act;
+        try {
+          if (act === "supprimer") {
+            if (!confirm("Supprimer définitivement cette proposition ?")) return;
+            await api(`/rest/v1/suggestions?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+            toutes = toutes.filter((s) => s.id !== id);
+            toast("Proposition supprimée");
+            return rendre();
+          }
+          const champs = {};
+          carte.querySelectorAll("[data-f]").forEach((el) => { champs[el.dataset.f] = el.value.trim() || null; });
+          if (!champs.prenom) return toast("Le prénom est obligatoire");
+          if (act !== "enregistrer") {
+            champs.statut = act;
+            champs.publie_le = act === "publiee" ? new Date().toISOString() : null;
+          }
+          btn.disabled = true;
+          const [maj] = await api(`/rest/v1/suggestions?id=eq.${encodeURIComponent(id)}`,
+            { method: "PATCH", body: champs, prefer: "return=representation" });
+          toutes = toutes.map((s) => (s.id === id ? maj : s));
+          toast({ publiee: "Publié : visible sur le site", rejetee: "Proposition rejetée",
+            en_attente: "Remis à relire", enregistrer: "Modifications enregistrées" }[act]);
+          rendre();
+        } catch (e) {
+          if (e.status !== 401) toast("L'opération a échoué.");
+          btn.disabled = false;
+        }
+      });
+
+      afficher();
     })();
   </script>
 </body>

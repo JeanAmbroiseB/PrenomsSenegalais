@@ -9,8 +9,8 @@
  *
  * Genre : "f" fille · "m" garçon · "x" mixte ou non encore précisé
  *
- * Sources (par ordre de priorité) :
- *   1. Calendrier du Pr Babacar Mbaye Diop (PRENOMS_CALENDRIER, PRENOMS_AUTRES) — fait foi.
+ * Sources, dans leur ordre d'ajout (préséance utilisée en cas de doublon) :
+ *   1. Calendrier du Pr Babacar Mbaye Diop (PRENOMS_CALENDRIER, PRENOMS_AUTRES).
  *   2. Contributions (PRENOMS_CONTRIBUTIONS).
  *   3. Calendrier FayDiaFal 2018 (PRENOMS_FAYDIAFAL), de Djamil Faye, Badou Dia et Ibrahima Fall.
  *   Quand deux prénoms se ressemblent, on garde l'écriture du Pr Diop et l'autre devient
@@ -226,7 +226,7 @@ const PRENOMS_FAYDIAFAL = [
   ["Ankiling","NC","x"],["Thiémokho","NC","m"]
 ];
 
-// Autres graphies : prénom de référence → écritures rencontrées ailleurs (FayDiaFal, contributions…).
+// Autres graphies : prénom → autres écritures du même prénom (FayDiaFal, contributions…).
 const AUTRES_GRAPHIES = {
   "Meysa": ["Meissa"], "Ngóone": ["Ngoné"], "Soxna": ["Sokhna"], "Xabaan": ["Khabane"], "Wore": ["Woré"],
   "Mbenda": ["Mbeinda"], "Ndikku": ["Ndickou"], "Kura": ["Coura"], "Ndew": ["Ndéw"], "Ndeela": ["Ndèla"],
