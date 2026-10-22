@@ -219,3 +219,4 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--green); out
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+.name-src { font-size: .8rem; color: var(--muted); margin: 10px 0 0; }

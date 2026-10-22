@@ -66,7 +66,13 @@
   const byKey = new Map();
   const seenNorm = new Set();
 
-  function addName(nom, e, g, date) {
+  const SOURCES = {
+    diop: "Calendrier du Pr Babacar Mbaye Diop (2018)",
+    contrib: "Contribution",
+    fdf: "Calendrier FayDiaFal (2018)"
+  };
+
+  function addName(nom, e, g, date, src) {
     const key = norm(nom) + "-" + e.toLowerCase();
     let n = byKey.get(key);
     if (n) {
@@ -74,23 +80,31 @@
       if (nom !== n.nom && !n.variantes.includes(nom)) n.variantes.push(nom);
       return;
     }
-    n = { id: key, nom, e, g, dates: date ? [date] : [], variantes: [] };
+    n = { id: key, nom, e, g, src, dates: date ? [date] : [], variantes: [...(AUTRES_GRAPHIES[nom] || [])] };
     n.fr = francise(nom);
-    if (loose(n.fr) === loose(nom) && norm(n.fr) === norm(nom)) n.fr = null;
-    n.search = [norm(nom), loose(nom), n.fr ? norm(n.fr) : "", n.fr ? loose(n.fr) : ""].join(" ");
+    const sansE = (v) => loose(v).replace(/e$/, "");
+    if (n.fr && (norm(n.fr) === norm(nom) || n.variantes.some((v) => sansE(v) === sansE(n.fr)))) n.fr = null;
     byKey.set(key, n);
-    seenNorm.add(norm(nom));
+    [nom, ...n.variantes].forEach((v) => seenNorm.add(norm(v)));
     NAMES.push(n);
   }
-  PRENOMS_CALENDRIER.forEach(([d, nom, e, g]) => addName(nom, e, g, d));
-  PRENOMS_AUTRES.forEach(([nom, e, g]) => { if (!seenNorm.has(norm(nom))) addName(nom, e, g, null); });
+  // Ordre de priorité : le calendrier du Pr Diop fait foi, puis les contributions, puis FayDiaFal.
+  PRENOMS_CALENDRIER.forEach(([d, nom, e, g]) => addName(nom, e, g, d, "diop"));
+  const addIfNew = (src) => ([nom, e, g]) => { if (!seenNorm.has(norm(nom))) addName(nom, e, g, null, src); };
+  PRENOMS_AUTRES.forEach(addIfNew("diop"));
+  PRENOMS_CONTRIBUTIONS.forEach(addIfNew("contrib"));
+  PRENOMS_FAYDIAFAL.forEach(addIfNew("fdf"));
 
   function meaningOf(n) {
     const raw = SIGNIFICATIONS[n.nom] ?? n.variantes.map((v) => SIGNIFICATIONS[v]).find(Boolean);
     if (!raw) return null;
     return typeof raw === "string" ? { sens: raw } : raw;
   }
-  NAMES.forEach((n) => { n.sens = meaningOf(n); n.search += " " + (n.sens ? norm(n.sens.sens) : ""); });
+  NAMES.forEach((n) => {
+    n.sens = meaningOf(n);
+    n.searchNoms = [n.nom, ...n.variantes, n.fr || ""].filter(Boolean).flatMap((v) => [norm(v), loose(v)]);
+    n.searchSens = n.sens ? loose(n.sens.sens) : "";
+  });
   NAMES.sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
   const byId = new Map(NAMES.map((n) => [n.id, n]));
 
@@ -196,12 +210,13 @@
       <div class="name-display">
         <p class="name-big ${n.g}">${esc(n.nom)}</p>
         ${n.fr ? `<p class="name-alt">Se prononce à peu près : <b>${esc(n.fr)}</b></p>` : ""}
-        ${n.variantes.length ? `<p class="name-alt">Variante : ${n.variantes.map(esc).join(", ")}</p>` : ""}
+        ${n.variantes.length ? `<p class="name-alt">Autre${n.variantes.length > 1 ? "s" : ""} graphie${n.variantes.length > 1 ? "s" : ""} : ${n.variantes.map(esc).join(", ")}</p>` : ""}
         <div class="badges">
           <span class="badge eth">${esc(et.nom)}${et.detail ? ` <small>(${esc(et.detail)})</small>` : ""}</span>
           <span class="badge ${n.g}">${GENRES[n.g]}</span>
           ${dates ? `<span class="badge fete">Fêté le ${dates}</span>` : ""}
         </div>
+        <p class="name-src">Source : ${esc(SOURCES[n.src])}</p>
       </div>
       <div class="meaning${sens ? "" : " empty"}">
         <h4>Signification</h4>
@@ -311,8 +326,14 @@
   function renderExplore() {
     const q = loose($("#q").value);
     const e = $("#f-ethnie").value, g = $("#f-genre").value, s = $("#f-sens").checked;
-    const list = NAMES.filter((n) =>
-      (!e || n.e === e) && (g === "all" || n.g === g) && (!s || n.sens) && (!q || n.search.includes(q)));
+    // Pertinence : prénom qui commence par la recherche, puis qui la contient, puis signification.
+    const rang = (n) => !q ? 0
+      : n.searchNoms.some((k) => k.startsWith(q)) ? 0
+      : n.searchNoms.some((k) => k.includes(q)) ? 1
+      : n.searchSens.includes(q) ? 2 : -1;
+    const list = NAMES.map((n) => [n, rang(n)])
+      .filter(([n, r]) => r >= 0 && (!e || n.e === e) && (g === "all" || n.g === g) && (!s || n.sens))
+      .sort((a, b) => a[1] - b[1]).map(([n]) => n);
     $("#explore-count").textContent = `${list.length} prénom${list.length > 1 ? "s" : ""}`;
     $("#explore-list").innerHTML = list.slice(0, state.exploreLimit).map(tileHtml).join("");
     $("#explore-more").hidden = list.length <= state.exploreLimit;
