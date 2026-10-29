@@ -16,6 +16,21 @@ const CONFIG = {
   SUPABASE_KEY: "sb_publishable_VOTvTAVtWjJPRjIgHWM_1w_gAB1JQ37"
 };
 
+/*
+ * Soutien et affiches à imprimer (bêta).
+ * Ce qui reste vide n'est pas affiché sur le site. Sans aucun moyen de paiement, le bouton
+ * « Soutenir » est masqué et l'affiche reste disponible en aperçu seulement.
+ */
+const SOUTIEN = {
+  WAVE: "",          // lien de paiement Wave, ex. "https://pay.wave.com/m/M_xxxxxxxx/c/sn/"
+  ORANGE_MONEY: "",  // numéro ou code marchand Orange Money, ex. "77 123 45 67"
+  PAYPAL: "",        // ex. "https://paypal.me/votrenom"
+  WHATSAPP: "",      // numéro qui reçoit les commandes d'affiches, format international sans « + », ex. "221771234567"
+  PRIX_AFFICHE: "2 000 FCFA"
+};
+SOUTIEN.actif = () => Boolean(SOUTIEN.WAVE || SOUTIEN.ORANGE_MONEY || SOUTIEN.PAYPAL);
+SOUTIEN.commandes = () => SOUTIEN.actif() && /^\d{8,15}$/.test(SOUTIEN.WHATSAPP);
+
 // Petit client commun au site et à la page d'administration.
 const DB = {
   actif: () => Boolean(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY),

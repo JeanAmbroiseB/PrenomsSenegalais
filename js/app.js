@@ -290,6 +290,7 @@
         <a class="btn-action" data-act="wa" target="_blank" rel="noopener"
            href="https://wa.me/?text=${encodeURIComponent(shareText(n))}">WhatsApp</a>
         ${n.page ? `<a class="btn-action" href="${pageOf(n)}">Page du prénom</a>` : ""}
+        <button type="button" class="btn-action" data-act="affiche">Affiche à imprimer <span class="beta">bêta</span></button>
         <button type="button" class="btn-action suggest" data-act="suggest">
           ${sens ? "Suggérer une modification" : "Donner la signification / suggérer une modification"}</button>
       </div>`;
@@ -352,6 +353,7 @@
       else copy(linkTo(n), "Lien copié");
     }
     if (act === "suggest") openSuggest(n.sens ? "modification" : "definition", n);
+    if (act === "affiche") openAffiche(n);
   });
 
   function linkTo(n) {
@@ -520,6 +522,72 @@
     toast(msg);
   });
 
+  // ---------- Soutien et affiche à imprimer (bêta) ----------
+  const lienSur = (u) => /^https:\/\//.test(u) ? u : "";
+  function paiementsHtml() {
+    const b = [];
+    if (lienSur(SOUTIEN.WAVE)) b.push(`<a class="btn-pay wave" href="${esc(SOUTIEN.WAVE)}" target="_blank" rel="noopener">Wave</a>`);
+    if (SOUTIEN.ORANGE_MONEY) b.push(`<button type="button" class="btn-pay om" data-copier="${esc(SOUTIEN.ORANGE_MONEY)}">` +
+      `Orange Money : ${esc(SOUTIEN.ORANGE_MONEY)} <small>Copier</small></button>`);
+    if (lienSur(SOUTIEN.PAYPAL)) b.push(`<a class="btn-pay paypal" href="${esc(SOUTIEN.PAYPAL)}" target="_blank" rel="noopener">PayPal</a>`);
+    return b.join("");
+  }
+  function initSoutien() {
+    if (!SOUTIEN.actif()) return;
+    $("#soutenir").hidden = false;
+    $("#soutien-moyens").innerHTML = paiementsHtml();
+    document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
+  }
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-copier]");
+    if (b) copy(b.dataset.copier, "Numéro copié");
+  });
+
+  const dlgAff = $("#affiche-dialog");
+  let afficheNom = null;
+  function donneesAffiche(n) {
+    const et = n.e === "NC" ? "sénégalais" : ETHNIES[n.e].nom.toLowerCase();
+    const dates = n.dates.map(formatDate).join(" et ");
+    return {
+      nom: n.nom, genre: n.g, fr: n.fr || "",
+      famille: $("#aff-famille").value.trim(), mention: $("#aff-mention").value.trim(),
+      infos: [`Prénom ${et}`, dates ? `fêté le ${dates}` : ""].filter(Boolean).join(" · "),
+      sens: n.sens ? n.sens.sens : "",
+      source: n.par ? `contribution de ${n.par}` : SOURCES[n.src]
+    };
+  }
+  let dessin = 0;
+  function majAffiche() {
+    const n = afficheNom;
+    if (!n) return;
+    const d = donneesAffiche(n);
+    const tour = ++dessin;
+    requestAnimationFrame(() => { if (tour === dessin) Affiche.dessiner($("#aff-toile"), d, { filigrane: true }); });
+    if (SOUTIEN.commandes()) {
+      const msg = `Bonjour, je souhaite commander l'affiche HD du prénom ${d.nom}${d.famille ? " " + d.famille : ""}` +
+        ` (${SOUTIEN.PRIX_AFFICHE}).${d.mention ? `\nMention : ${d.mention}` : ""}\nJ'ai payé par : ` +
+        `\nCode de la commande : ${Affiche.code(d)}`;
+      $("#aff-whatsapp").href = `https://wa.me/${SOUTIEN.WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    }
+  }
+  function openAffiche(n) {
+    if (afficheNom !== n) { $("#aff-famille").value = ""; $("#aff-mention").value = ""; }
+    afficheNom = n;
+    const ok = SOUTIEN.commandes();
+    $("#aff-commande").hidden = !ok;
+    $("#aff-bientot").hidden = ok;
+    if (ok) {
+      $("#aff-prix").textContent = SOUTIEN.PRIX_AFFICHE;
+      $("#aff-paiements").innerHTML = paiementsHtml();
+    }
+    majAffiche();
+    if (!dlgAff.open) dlgAff.showModal();
+  }
+  ["#aff-famille", "#aff-mention"].forEach((sel) => $(sel).addEventListener("input", majAffiche));
+  dlgAff.addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-close]") || ev.target === dlgAff) dlgAff.close();
+  });
+
   // ---------- Divers ----------
   let toastTimer;
   function toast(msg) {
@@ -546,17 +614,19 @@
     $("#stats").textContent = `${NAMES.length} prénoms référencés, dont ${withSens} avec une signification connue.`;
   }
 
-  // #p=<id> affiche une fiche ; #suggerer=<id> et #proposer (liens des pages prenom/) ouvrent le formulaire.
+  // #p=<id> affiche une fiche ; #suggerer=<id> et #proposer (liens des pages prenom/) ouvrent le formulaire,
+  // #affiche=<id> l'affiche à imprimer.
   function openFromHash() {
     if (location.hash === "#proposer") {
       history.replaceState(null, "", location.pathname + location.search);
       return openSuggest("nouveau");
     }
-    const m = location.hash.match(/^#(p|suggerer)=(.+)$/);
+    const m = location.hash.match(/^#(p|suggerer|affiche)=(.+)$/);
     const n = m && byId.get(decodeURIComponent(m[2]));
     if (!n) return;
     showName(n);
     if (m[1] === "suggerer") openSuggest(n.sens ? "modification" : "definition", n);
+    if (m[1] === "affiche") openAffiche(n);
   }
   window.addEventListener("hashchange", openFromHash);
 
@@ -565,6 +635,7 @@
   renderFavs();
   initToday();
   initStats();
+  initSoutien();
   openFromHash();
   chargerContributions();
 })();

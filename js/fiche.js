@@ -1,8 +1,12 @@
-// Pages prenom/<id>.html : ajoute les contributions publiées (Supabase) à la fiche générée,
+// Pages prenom/*.html : affiche le lien « Soutenir » si besoin, et ajoute les contributions publiées (Supabase) à la fiche générée,
 // avec les mêmes règles que js/app.js : une signification déjà connue reste en premier,
 // une nouvelle écriture devient une « autre graphie ».
 (() => {
   "use strict";
+  // Lien « Soutenir le projet » du pied de page, seulement si un moyen de paiement est configuré (js/config.js).
+  if (typeof SOUTIEN !== "undefined" && SOUTIEN.actif()) {
+    document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
+  }
   const main = document.querySelector("main[data-id]");
   if (!main || typeof DB === "undefined" || !DB.actif()) return;
 

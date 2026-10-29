@@ -24,6 +24,7 @@ Puis ouvrir http://localhost:8080. On peut aussi ouvrir directement `index.html`
 | `supabase/schema.sql` | Création de la base des suggestions |
 | `js/app.js` | Le fonctionnement du site |
 | `js/fiche.js` | Ajoute les contributions publiées sur les pages des prénoms |
+| `js/affiche.js` | Dessin de l'affiche à imprimer (aperçu sur le site, version HD dans `admin.html`) |
 | `scripts/generer_pages.py` | Génère `prenom/*.html` et `sitemap.xml` à partir des données |
 | `css/style.css` | L'apparence |
 
@@ -93,6 +94,33 @@ Ensuite, aller sur `https://…/admin.html` et se connecter.
 
 Tant que `js/config.js` n'est pas rempli, les propositions restent dans le navigateur de la personne
 qui les envoie (mode test).
+
+## Soutien et affiches à imprimer (bêta)
+
+Deux moyens de financer le site, réglés dans `js/config.js`, rubrique `SOUTIEN` :
+
+```js
+WAVE: "https://pay.wave.com/m/…",   // lien de paiement Wave
+ORANGE_MONEY: "77 123 45 67",       // numéro ou code marchand (affiché avec un bouton Copier)
+PAYPAL: "https://paypal.me/…",
+WHATSAPP: "221771234567",           // numéro qui reçoit les commandes d'affiches
+PRIX_AFFICHE: "2 000 FCFA"
+```
+
+Ce qui reste vide n'est pas affiché.
+
+- **Soutenir le projet** : dès qu'un moyen de paiement est rempli, une carte « Soutenir » apparaît dans
+  « À propos », avec un lien dans le pied de page (accueil et pages des prénoms).
+- **Affiche à imprimer** : sur chaque fiche, le bouton « Affiche à imprimer » montre un aperçu gratuit avec
+  filigrane (prénom, nom de famille, mention, signification, origine, date de fête). Si un moyen de paiement
+  **et** le numéro WhatsApp sont remplis, le visiteur peut commander la version HD : il paie, puis envoie sa
+  commande sur WhatsApp (le message contient un code « PS1-… »).
+- **Livrer une affiche** : dans `admin.html`, ouvrir « Affiches HD à imprimer », coller le message reçu,
+  **vérifier d'abord que le paiement est bien arrivé**, puis télécharger l'image (PNG A4, 300 dpi) et
+  l'envoyer au client sur WhatsApp.
+
+Ces numéros et liens sont visibles par tous les visiteurs : utiliser de préférence un compte marchand
+ou un numéro dédié.
 
 ## Passer à un nom de domaine
 

@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
   <header class="site-header">
@@ -215,6 +215,16 @@
         </div>
       </div>
 
+      <div class="support card" id="soutenir" hidden>
+        <div>
+          <p class="tribute-kicker">Soutenir le projet <span class="beta">bêta</span></p>
+          <h3>Aidez-nous à faire vivre les prénoms de nos ancêtres</h3>
+          <p>Prénoms Sénégalais est gratuit et le restera. Votre soutien, même modeste, aide à payer l'hébergement
+            et le nom de domaine, et à continuer de rechercher le sens des prénoms.</p>
+        </div>
+        <div class="paiements" id="soutien-moyens"></div>
+      </div>
+
       <div class="about-grid">
         <article class="card">
           <h3>Comment les prénoms sont présentés</h3>
@@ -276,7 +286,8 @@
         <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
         <p class="footer-thanks">Avec toute notre gratitude au Professeur Babacar Mbaye Diop, ainsi qu'à Djamil Faye,
           Badou Dia et Ibrahima Fall, concepteurs du calendrier FayDiaFal. <a href="#apropos">Lire l'hommage</a>
-          · <a href="prenom/index.html">Tous les prénoms de A à Z</a></p>
+          · <a href="prenom/index.html">Tous les prénoms de A à Z</a>
+          <span data-soutien hidden>· <a href="#soutenir">Soutenir le projet</a></span></p>
       </div>
       <button class="btn-ghost light" type="button" data-propose>Proposer un prénom</button>
     </div>
@@ -346,11 +357,45 @@
     </form>
   </dialog>
 
+  <!-- Affiche du prénom à imprimer (bêta) -->
+  <dialog id="affiche-dialog" class="dialog dialog-large">
+    <form method="dialog" id="affiche-form">
+      <header class="dialog-head">
+        <h2>Affiche à imprimer <span class="beta">bêta</span></h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fermer">✕</button>
+      </header>
+      <div class="dialog-body affiche-body">
+        <canvas id="aff-toile" width="600" height="849" aria-label="Aperçu de l'affiche"></canvas>
+        <div class="affiche-champs">
+          <p class="field-hint">Un souvenir pour une naissance, un baptême ou un anniversaire : le prénom, sa signification
+            et son origine sur une belle affiche.</p>
+          <label><span>Nom de famille <span class="opt">(facultatif)</span></span>
+            <input id="aff-famille" maxlength="40" placeholder="ex. Faye" autocomplete="off">
+          </label>
+          <label><span>Mention <span class="opt">(facultatif)</span></span>
+            <input id="aff-mention" maxlength="60" placeholder="ex. Née le 12 mars 2026" autocomplete="off">
+          </label>
+          <div class="aff-commande" id="aff-commande" hidden>
+            <h3>Version HD à imprimer · <span id="aff-prix"></span></h3>
+            <p class="field-hint">Format A4 haute définition, sans filigrane, envoyée sur WhatsApp.</p>
+            <ol>
+              <li>Payez avec : <span class="paiements" id="aff-paiements"></span></li>
+              <li><a class="btn-primary" id="aff-whatsapp" target="_blank" rel="noopener">Envoyer ma commande sur WhatsApp</a></li>
+              <li>Vous recevez votre affiche après vérification du paiement.</li>
+            </ol>
+          </div>
+          <p class="field-hint" id="aff-bientot">Bientôt : la version haute définition à imprimer, sans filigrane.</p>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=7"></script>
-  <script src="data/prenoms.js?v=7"></script>
-  <script src="data/significations.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="data/prenoms.js?v=8"></script>
+  <script src="data/significations.js?v=8"></script>
+  <script src="js/affiche.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

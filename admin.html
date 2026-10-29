@@ -18,7 +18,7 @@
   </script>
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=8">
   <style>
     .admin { margin-top: 28px; margin-bottom: 48px; }
     .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -48,7 +48,15 @@
     .btn-danger { border: 1.5px solid var(--red); color: var(--red); background: transparent; border-radius: 999px; padding: 8px 16px; font-weight: 600; }
     .tag { border-radius: 999px; padding: 2px 10px; font-size: .78rem; font-weight: 600; background: var(--green-soft); color: var(--green-dark); }
     .empty { padding: 32px; text-align: center; color: var(--muted); }
-    @media (max-width: 760px) { .sugg { grid-template-columns: 1fr; } .fields .row2 { grid-template-columns: 1fr; } }
+    .affiche-admin { margin-bottom: 18px; }
+    .affiche-admin summary { cursor: pointer; font-size: 1.05rem; }
+    .aff-admin { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px; margin-top: 14px; align-items: start; }
+    .aff-admin label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; font-size: .9rem; }
+    .aff-admin input, .aff-admin textarea, .aff-admin select {
+      border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; background: #fff; width: 100%; font: inherit;
+    }
+    .aff-admin canvas { width: 100%; height: auto; border-radius: 6px; box-shadow: var(--shadow); }
+    @media (max-width: 760px) { .sugg, .aff-admin { grid-template-columns: 1fr; } .fields .row2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -84,6 +92,33 @@
       <p class="note">Relisez chaque proposition, corrigez-la si besoin, puis publiez-la : elle apparaît aussitôt sur
         le site avec le nom de son auteur. Une signification déjà présente sur le site reste affichée en premier ;
         la nouvelle s'ajoute dans « Autres éclairages ». Une nouvelle écriture devient une « autre graphie ».</p>
+      <details class="card affiche-admin">
+        <summary><strong>Affiches HD à imprimer</strong> <span class="beta">bêta</span></summary>
+        <p class="meta">Collez le message de commande reçu sur WhatsApp (il contient un code « PS1-… »). Vérifiez d'abord
+          la réception du paiement, corrigez le texte si besoin, puis téléchargez l'affiche et renvoyez-la sur WhatsApp.</p>
+        <div class="aff-admin">
+          <div class="fields">
+            <label>Message ou code de commande <textarea id="a-code" rows="3"></textarea></label>
+            <div class="row2">
+              <label>Prénom <input id="a-nom"></label>
+              <label>Nom de famille <input id="a-famille"></label>
+            </div>
+            <label>Mention <input id="a-mention"></label>
+            <label>Ligne d'informations <input id="a-infos"></label>
+            <label>Signification <textarea id="a-sens" rows="3"></textarea></label>
+            <div class="row2">
+              <label>Prononciation <input id="a-fr"></label>
+              <label>Source <input id="a-source"></label>
+            </div>
+            <label>Couleur du prénom
+              <select id="a-genre"><option value="f">Rouge</option><option value="m">Vert</option></select>
+            </label>
+            <button class="btn-primary" id="a-telecharger" type="button" disabled>Télécharger l'affiche HD (PNG, A4)</button>
+          </div>
+          <canvas id="a-toile" width="500" height="707"></canvas>
+        </div>
+      </details>
+
       <div class="tabs" id="tabs">
         <button type="button" data-s="en_attente" class="on">À relire<span class="n"></span></button>
         <button type="button" data-s="publiee">Publiées<span class="n"></span></button>
@@ -96,9 +131,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=6"></script>
-  <script src="data/prenoms.js?v=6"></script>
-  <script src="data/significations.js?v=6"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="data/prenoms.js?v=8"></script>
+  <script src="data/significations.js?v=8"></script>
+  <script src="js/affiche.js?v=8"></script>
   <script>
     (() => {
       const $ = (s) => document.querySelector(s);
@@ -304,6 +340,39 @@
       });
 
       afficher();
+    })();
+  </script>
+  <script>
+    // Affiches HD (bêta) : même dessin que l'aperçu du site, sans filigrane, en A4 à 300 dpi.
+    (() => {
+      const $ = (s) => document.querySelector(s);
+      const champs = ["nom", "famille", "mention", "infos", "sens", "fr", "source", "genre"];
+      const donnees = () => Object.fromEntries(champs.map((c) => [c, $("#a-" + c).value.trim()]));
+      const apercu = () => {
+        const d = donnees();
+        $("#a-telecharger").disabled = !d.nom;
+        if (d.nom) Affiche.dessiner($("#a-toile"), d, { filigrane: false });
+      };
+      $("#a-code").addEventListener("input", () => {
+        const d = Affiche.lireCode($("#a-code").value);
+        if (!d) return;
+        champs.forEach((c) => { $("#a-" + c).value = c === "genre" ? (d.genre === "f" ? "f" : "m") : d[c]; });
+        apercu();
+      });
+      champs.forEach((c) => $("#a-" + c).addEventListener("input", apercu));
+      $("#a-telecharger").addEventListener("click", async () => {
+        const d = donnees();
+        const toile = document.createElement("canvas");
+        toile.width = 2480; toile.height = 3508;
+        await Affiche.dessiner(toile, d, { filigrane: false });
+        toile.toBlob((blob) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `affiche-${[d.nom, d.famille].filter(Boolean).join("-")}.png`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        }, "image/png");
+      });
     })();
   </script>
 </body>

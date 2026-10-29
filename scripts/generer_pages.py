@@ -20,7 +20,7 @@ import urllib.parse
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DOSSIER = RACINE / "prenom"
-VERSION = "7"  # même numéro que les ?v= de index.html (cache des navigateurs)
+VERSION = "8"  # même numéro que les ?v= de index.html (cache des navigateurs)
 NB_VOISINS = 12
 
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
@@ -356,7 +356,8 @@ def gabarit(site, chemin, titre_page, desc, corps, *, attrs_main="", ld=None, sc
         <p>Prénoms Sénégalais — pour la sauvegarde et la transmission de nos prénoms.</p>
         <p class="footer-thanks">Avec toute notre gratitude au Professeur Babacar Mbaye Diop, ainsi qu'à Djamil Faye,
           Badou Dia et Ibrahima Fall, concepteurs du calendrier FayDiaFal. <a href="../index.html#apropos">Lire l'hommage</a>
-          · <a href="index.html">Tous les prénoms de A à Z</a></p>
+          · <a href="index.html">Tous les prénoms de A à Z</a>
+          <span data-soutien hidden>· <a href="../index.html#soutenir">Soutenir le projet</a></span></p>
       </div>
       <a class="btn-ghost light" href="../index.html#proposer">Proposer un prénom</a>
     </div>
@@ -381,6 +382,9 @@ def fil_ariane(site, elements):
 
 def json_str(s):
     return json.dumps(s, ensure_ascii=False).replace("</", "<\\/")
+
+
+SCRIPTS = f'\n\n  <script src="../js/config.js?v={VERSION}"></script>\n  <script src="../js/fiche.js?v={VERSION}"></script>'
 
 
 def page_prenom(n, noms, ethnies, site):
@@ -426,6 +430,7 @@ def page_prenom(n, noms, ethnies, site):
                f'        <a class="btn-action suggest" href="../index.html#suggerer={n["id"]}">'
                f'{"Suggérer une modification" if sens else "Donner la signification / suggérer une modification"}</a>',
                f'        <a class="btn-action" href="../index.html#p={n["id"]}">Voir dans le générateur</a>',
+               f'        <a class="btn-action" href="../index.html#affiche={n["id"]}">Affiche à imprimer <span class="beta">bêta</span></a>',
                f'        <a class="btn-action" target="_blank" rel="noopener" href="https://wa.me/?text={urllib.parse.quote(partage, safe="")}">WhatsApp</a>',
                "      </div>", "    </article>", ""]
     if voisins:
@@ -438,7 +443,7 @@ def page_prenom(n, noms, ethnies, site):
     noms_attr = esc("|".join([n["nom"], *n["variantes"]]))
     return gabarit(site, f"prenom/{n['id']}.html", titre(n, ethnies), description(n, ethnies), "\n".join(lignes),
                    attrs_main=f' data-id="{n["id"]}" data-noms="{noms_attr}"', ld=ld,
-                   scripts=f'\n\n  <script src="../js/config.js?v={VERSION}"></script>\n  <script src="../js/fiche.js?v={VERSION}"></script>')
+                   scripts=SCRIPTS)
 
 
 def lettre(nom):
@@ -468,7 +473,7 @@ def page_index(noms, ethnies, site):
     desc = (f"Liste complète des {len(noms)} prénoms sénégalais de A à Z : wolof, sérères, diola, peuls, mandingues, "
             "soninkés, manjaques, bassari, lébous, avec signification, genre et date de fête.")
     return gabarit(site, "prenom/index.html", "Tous les prénoms sénégalais de A à Z — Prénoms Sénégalais",
-                   desc, "\n".join(lignes), ld=ld)
+                   desc, "\n".join(lignes), ld=ld, scripts=SCRIPTS)
 
 
 def sitemap(noms, site, jour):
