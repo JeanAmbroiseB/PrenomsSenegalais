@@ -291,3 +291,10 @@ a.btn-primary { display: inline-block; text-decoration: none; }
   .support, .affiche-body { grid-template-columns: 1fr; }
   .affiche-body canvas { max-width: 320px; margin-inline: auto; }
 }
+
+/* ---------- Engagement du contributeur ---------- */
+.engagement { background: var(--yellow-soft); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.engagement p { margin: 0; font-size: .88rem; color: #6b5000; }
+.dialog-body .engagement .check { flex-direction: row; align-items: flex-start; margin: 0; color: var(--ink); font-weight: 500; font-size: .9rem; }
+.engagement .check input { flex: none; width: 18px; height: 18px; padding: 0; margin: 2px 0 0; }
+.engagement .check span { flex: 1; }

@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
   <header class="site-header">
@@ -331,9 +331,9 @@
         <label><span>Autre graphie / prononciation <span class="opt">(facultatif)</span></span>
           <input name="graphie" id="s-graphie" maxlength="120" placeholder="ex. Ngoné, Ngonė…">
         </label>
-        <label><span>Commentaire ou source <span class="opt">(facultatif)</span></span>
+        <label><span>D'où vient cette information ? <span class="opt">(obligatoire si vous donnez une signification)</span></span>
           <textarea name="commentaire" id="s-comment" rows="2" maxlength="1000"
-            placeholder="Comment le savez-vous ? (famille, livre, ancien du village…)"></textarea>
+            placeholder="ex. ma grand-mère, un ancien du village, tel livre… En cas de doute, dites-le ici."></textarea>
         </label>
         <label>Votre nom ou vos initiales
           <input name="auteur" id="s-auteur" required maxlength="80" autocomplete="name"
@@ -345,6 +345,13 @@
           <input name="email" type="email" maxlength="120" autocomplete="email"
             placeholder="Pour vous recontacter si besoin">
         </label>
+        <div class="engagement">
+          <p>Une signification publiée ici sera lue, partagée et transmise à des familles qui choisissent un prénom
+            pour leur enfant. Merci de ne proposer que ce dont vous êtes sûr(e).</p>
+          <label class="check"><input type="checkbox" name="engagement" id="s-engagement" required>
+            <span>Je certifie que ces informations sont exactes à ma connaissance, et j'en assume la
+              responsabilité. J'accepte qu'elles soient publiées avec mon nom.</span></label>
+        </div>
         <p class="field-hint">Chaque proposition est relue avant d'être publiée sur le site.</p>
         <input type="hidden" name="prenom_id" id="s-id">
         <!-- Piège à robots : ce champ reste vide pour un humain. -->
@@ -392,10 +399,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=9"></script>
-  <script src="data/prenoms.js?v=9"></script>
-  <script src="data/significations.js?v=9"></script>
-  <script src="js/affiche.js?v=9"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/config.js?v=10"></script>
+  <script src="data/prenoms.js?v=10"></script>
+  <script src="data/significations.js?v=10"></script>
+  <script src="js/affiche.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

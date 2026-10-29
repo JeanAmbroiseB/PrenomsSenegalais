@@ -481,6 +481,10 @@
     const changed = data.signification !== (original?.sens?.sens ?? "") || data.commentaire || data.graphie ||
       (original && (data.ethnie !== (original.e === "NC" ? "" : original.e) || data.genre !== original.g));
     if (!changed && data.type !== "nouveau") return toast("Aucune modification à envoyer");
+    if (data.signification && data.signification !== (original?.sens?.sens ?? "") && !data.commentaire) {
+      toast("Merci d'indiquer d'où vient cette signification");
+      return $("#s-comment").focus();
+    }
 
     if (data.site_web) { dlg.close(); return toast("Merci !"); } // robot
     store.set(STORE.auteur, data.auteur);

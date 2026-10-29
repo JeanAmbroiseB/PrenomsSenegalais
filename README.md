@@ -64,7 +64,9 @@ relancer `python3 scripts/generer_pages.py`, qui supprime l'ancienne page.
 ## Recevoir et publier les suggestions
 
 Les visiteurs proposent une signification, une correction ou un nouveau prénom, en indiquant leur nom
-ou leurs initiales. Les propositions arrivent sur la page `admin.html` : on les relit, on les corrige si besoin,
+ou leurs initiales. Avant d'envoyer, ils doivent cocher un engagement (« je certifie que ces informations sont
+exactes à ma connaissance et j'en assume la responsabilité »), et indiquer d'où vient toute signification
+proposée. Les propositions arrivent sur la page `admin.html` : on les relit, on les corrige si besoin,
 puis on les **publie** ou on les **rejette**. Une proposition publiée apparaît aussitôt sur le site avec
 « proposé par … », sans redéploiement.
 
