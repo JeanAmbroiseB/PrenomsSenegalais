@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 
-Sitemap: https://prenomssenegalais.onrender.com/sitemap.xml
+Sitemap: https://www.prenomssenegalais.com/sitemap.xml

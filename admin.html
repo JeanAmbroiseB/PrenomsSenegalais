@@ -10,7 +10,7 @@
     // le visiteur est renvoyé vers l'adresse officielle (même page, même fiche).
     // Pour changer de domaine : python3 scripts/changer_domaine.py nouveau-domaine.sn
     (function () {
-      var OFFICIEL = "https://prenomssenegalais.onrender.com";
+      var OFFICIEL = "https://www.prenomssenegalais.com";
       if (location.hostname.slice(-13) === ".onrender.com" && location.origin !== OFFICIEL) {
         location.replace(OFFICIEL + location.pathname + location.search + location.hash);
       }

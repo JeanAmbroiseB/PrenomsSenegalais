@@ -114,7 +114,7 @@ Ce qui reste vide n'est pas affiché.
 **Pour l'instant, ces fonctionnalités sont en « hibernation » : les visiteurs ne les voient pas.**
 Elles n'apparaissent que sur les navigateurs où le mode bêta a été activé :
 
-- activer : ouvrir `https://prenomssenegalais.onrender.com/#beta-on` (un message « Mode bêta activé » s'affiche) ;
+- activer : ouvrir `https://www.prenomssenegalais.com/#beta-on` (un message « Mode bêta activé » s'affiche) ;
 - désactiver : ouvrir `…/#beta-off`.
 
 Le réglage est mémorisé dans le navigateur : il faut l'activer sur chaque téléphone ou ordinateur, et le
