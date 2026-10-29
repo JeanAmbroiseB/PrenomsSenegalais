@@ -3,9 +3,10 @@
 // une nouvelle écriture devient une « autre graphie ».
 (() => {
   "use strict";
-  // Lien « Soutenir le projet » du pied de page, seulement si un moyen de paiement est configuré (js/config.js).
-  if (typeof SOUTIEN !== "undefined" && SOUTIEN.actif()) {
-    document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
+  // Mode bêta (js/config.js) : bouton « Affiche à imprimer », et lien « Soutenir » si un paiement est configuré.
+  if (typeof BETA !== "undefined" && BETA.actif) {
+    document.querySelectorAll("[data-beta]").forEach((x) => { x.hidden = false; });
+    if (SOUTIEN.actif()) document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
   }
   const main = document.querySelector("main[data-id]");
   if (!main || typeof DB === "undefined" || !DB.actif()) return;

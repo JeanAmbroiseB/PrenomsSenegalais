@@ -20,7 +20,7 @@ import urllib.parse
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DOSSIER = RACINE / "prenom"
-VERSION = "8"  # même numéro que les ?v= de index.html (cache des navigateurs)
+VERSION = "9"  # même numéro que les ?v= de index.html (cache des navigateurs)
 NB_VOISINS = 12
 
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
@@ -430,7 +430,7 @@ def page_prenom(n, noms, ethnies, site):
                f'        <a class="btn-action suggest" href="../index.html#suggerer={n["id"]}">'
                f'{"Suggérer une modification" if sens else "Donner la signification / suggérer une modification"}</a>',
                f'        <a class="btn-action" href="../index.html#p={n["id"]}">Voir dans le générateur</a>',
-               f'        <a class="btn-action" href="../index.html#affiche={n["id"]}">Affiche à imprimer <span class="beta">bêta</span></a>',
+               f'        <a class="btn-action" href="../index.html#affiche={n["id"]}" data-beta hidden>Affiche à imprimer <span class="beta">bêta</span></a>',
                f'        <a class="btn-action" target="_blank" rel="noopener" href="https://wa.me/?text={urllib.parse.quote(partage, safe="")}">WhatsApp</a>',
                "      </div>", "    </article>", ""]
     if voisins:

@@ -17,9 +17,28 @@ const CONFIG = {
 };
 
 /*
- * Soutien et affiches à imprimer (bêta).
- * Ce qui reste vide n'est pas affiché sur le site. Sans aucun moyen de paiement, le bouton
- * « Soutenir » est masqué et l'affiche reste disponible en aperçu seulement.
+ * Mode bêta : le soutien et l'affiche à imprimer ne sont visibles que sur les navigateurs où on l'a activé,
+ * en ouvrant une page du site avec #beta-on à la fin de l'adresse (#beta-off pour le désactiver).
+ * Pour les ouvrir à tous les visiteurs, remplacer « POUR_TOUS: false » par « POUR_TOUS: true ».
+ */
+const BETA = (() => {
+  const POUR_TOUS = false;
+  const CLE = "ps-beta";
+  let change = null;
+  try {
+    if (location.hash === "#beta-on") { localStorage.setItem(CLE, "1"); change = "on"; }
+    if (location.hash === "#beta-off") { localStorage.removeItem(CLE); change = "off"; }
+    if (change) history.replaceState(null, "", location.pathname + location.search);
+    return { actif: POUR_TOUS || localStorage.getItem(CLE) === "1", change };
+  } catch {
+    return { actif: POUR_TOUS, change };
+  }
+})();
+
+/*
+ * Soutien et affiches à imprimer (bêta, voir ci-dessus).
+ * Ce qui reste vide n'est pas affiché. Sans aucun moyen de paiement, le bouton « Soutenir » est masqué
+ * et l'affiche reste disponible en aperçu seulement.
  */
 const SOUTIEN = {
   WAVE: "",          // lien de paiement Wave, ex. "https://pay.wave.com/m/M_xxxxxxxx/c/sn/"
@@ -28,7 +47,7 @@ const SOUTIEN = {
   WHATSAPP: "",      // numéro qui reçoit les commandes d'affiches, format international sans « + », ex. "221771234567"
   PRIX_AFFICHE: "2 000 FCFA"
 };
-SOUTIEN.actif = () => Boolean(SOUTIEN.WAVE || SOUTIEN.ORANGE_MONEY || SOUTIEN.PAYPAL);
+SOUTIEN.actif = () => BETA.actif && Boolean(SOUTIEN.WAVE || SOUTIEN.ORANGE_MONEY || SOUTIEN.PAYPAL);
 SOUTIEN.commandes = () => SOUTIEN.actif() && /^\d{8,15}$/.test(SOUTIEN.WHATSAPP);
 
 // Petit client commun au site et à la page d'administration.

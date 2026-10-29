@@ -109,6 +109,16 @@ PRIX_AFFICHE: "2 000 FCFA"
 
 Ce qui reste vide n'est pas affiché.
 
+**Pour l'instant, ces fonctionnalités sont en « hibernation » : les visiteurs ne les voient pas.**
+Elles n'apparaissent que sur les navigateurs où le mode bêta a été activé :
+
+- activer : ouvrir `https://prenomssenegalais.onrender.com/#beta-on` (un message « Mode bêta activé » s'affiche) ;
+- désactiver : ouvrir `…/#beta-off`.
+
+Le réglage est mémorisé dans le navigateur : il faut l'activer sur chaque téléphone ou ordinateur, et le
+refaire si les données du navigateur sont effacées. Le jour où vous voulez les ouvrir à tous, mettre
+`POUR_TOUS = true` dans `js/config.js` (rubrique `BETA`) et envoyer sur GitHub.
+
 - **Soutenir le projet** : dès qu'un moyen de paiement est rempli, une carte « Soutenir » apparaît dans
   « À propos », avec un lien dans le pied de page (accueil et pages des prénoms).
 - **Affiche à imprimer** : sur chaque fiche, le bouton « Affiche à imprimer » montre un aperçu gratuit avec

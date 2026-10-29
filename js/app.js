@@ -290,7 +290,7 @@
         <a class="btn-action" data-act="wa" target="_blank" rel="noopener"
            href="https://wa.me/?text=${encodeURIComponent(shareText(n))}">WhatsApp</a>
         ${n.page ? `<a class="btn-action" href="${pageOf(n)}">Page du prénom</a>` : ""}
-        <button type="button" class="btn-action" data-act="affiche">Affiche à imprimer <span class="beta">bêta</span></button>
+        ${BETA.actif ? `<button type="button" class="btn-action" data-act="affiche">Affiche à imprimer <span class="beta">bêta</span></button>` : ""}
         <button type="button" class="btn-action suggest" data-act="suggest">
           ${sens ? "Suggérer une modification" : "Donner la signification / suggérer une modification"}</button>
       </div>`;
@@ -626,7 +626,7 @@
     if (!n) return;
     showName(n);
     if (m[1] === "suggerer") openSuggest(n.sens ? "modification" : "definition", n);
-    if (m[1] === "affiche") openAffiche(n);
+    if (m[1] === "affiche" && BETA.actif) openAffiche(n);
   }
   window.addEventListener("hashchange", openFromHash);
 
@@ -636,6 +636,7 @@
   initToday();
   initStats();
   initSoutien();
+  if (BETA.change) toast(BETA.change === "on" ? "Mode bêta activé sur ce navigateur" : "Mode bêta désactivé sur ce navigateur");
   openFromHash();
   chargerContributions();
 })();
