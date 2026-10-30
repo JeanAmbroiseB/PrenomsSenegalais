@@ -263,13 +263,9 @@ a.btn-ghost { display: inline-block; text-decoration: none; }
 .az-group { margin-top: 32px; }
 .az-group h2 { color: var(--green-dark); border-bottom: 2px solid var(--yellow); padding-bottom: 4px; }
 
-/* ---------- Soutien et affiche à imprimer (bêta) ---------- */
+/* ---------- Affiche et bâche du prénom (bêta) ---------- */
 .beta { display: inline-block; vertical-align: middle; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   background: var(--red); color: #fff; border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
-.support { margin-bottom: 16px; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: center;
-  border-top: 5px solid var(--green); }
-.support p { margin: 0 0 8px; }
-.support h3 { color: var(--green-dark); font-size: 1.3rem; }
 .paiements { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn-pay { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 12px; padding: 10px 16px;
   font-weight: 700; text-decoration: none; color: #fff; }
@@ -278,18 +274,31 @@ a.btn-ghost { display: inline-block; text-decoration: none; }
 .btn-pay.om { background: #ff7900; }
 .btn-pay.paypal { background: #003087; }
 .btn-pay:hover { filter: brightness(.95); }
-.dialog-large { width: min(860px, 100% - 24px); }
+.dialog-large { width: min(960px, 100% - 24px); }
 .affiche-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
-.affiche-body canvas { width: 100%; height: auto; border-radius: 6px; box-shadow: var(--shadow); background: var(--cream); }
+.affiche-body.paysage { grid-template-columns: 1fr; }
+.affiche-body.paysage .affiche-champs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+.affiche-body.paysage .affiche-champs > .field-hint, .affiche-body.paysage .aff-styles,
+.affiche-body.paysage .aff-commande { grid-column: 1 / -1; }
+.aff-apercu { display: flex; justify-content: center; }
+.aff-apercu canvas { max-width: 100%; max-height: 62vh; width: auto; height: auto; border-radius: 6px; box-shadow: var(--shadow); background: var(--cream); }
 .affiche-champs { display: flex; flex-direction: column; gap: 14px; }
+.affiche-champs .check { flex-direction: row; align-items: center; gap: 10px; }
+.affiche-champs .check input { flex: none; width: 18px; height: 18px; padding: 0; margin: 0; }
+.aff-styles { display: flex; flex-wrap: wrap; gap: 8px; }
+.aff-styles button { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--line); background: #fff;
+  border-radius: 999px; padding: 6px 12px 6px 6px; font: inherit; font-size: .9rem; cursor: pointer; }
+.aff-styles button[aria-checked="true"] { border-color: var(--green); background: var(--green-soft); font-weight: 600; }
+.aff-styles .pastille { width: 22px; height: 22px; border-radius: 50%; background: var(--fond);
+  box-shadow: inset 0 0 0 4px var(--cadre), inset 0 0 0 7px var(--fond), inset 0 0 0 11px var(--nom); }
 .aff-commande { background: var(--cream); border-radius: 12px; padding: 14px 16px; }
 .aff-commande h3 { margin: 0 0 4px; }
 .aff-commande ol { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
 .aff-commande .paiements { margin-top: 6px; }
 a.btn-primary { display: inline-block; text-decoration: none; }
 @media (max-width: 700px) {
-  .support, .affiche-body { grid-template-columns: 1fr; }
-  .affiche-body canvas { max-width: 320px; margin-inline: auto; }
+  .affiche-body, .affiche-body.paysage .affiche-champs { grid-template-columns: 1fr; }
+  .aff-apercu canvas { max-height: 46vh; }
 }
 
 /* ---------- Engagement du contributeur ---------- */

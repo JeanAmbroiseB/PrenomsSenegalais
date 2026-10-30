@@ -1,13 +1,10 @@
-// Pages prenom/*.html : affiche le lien « Soutenir » si besoin, et ajoute les contributions publiées (Supabase) à la fiche générée,
+// Pages prenom/*.html : montre le bouton de l'affiche en mode bêta, et ajoute les contributions publiées (Supabase) à la fiche générée,
 // avec les mêmes règles que js/app.js : une signification déjà connue reste en premier,
 // une nouvelle écriture devient une « autre graphie ».
 (() => {
   "use strict";
-  // Mode bêta (js/config.js) : bouton « Affiche à imprimer », et lien « Soutenir » si un paiement est configuré.
-  if (typeof BETA !== "undefined" && BETA.actif) {
-    document.querySelectorAll("[data-beta]").forEach((x) => { x.hidden = false; });
-    if (SOUTIEN.actif()) document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
-  }
+  // Mode bêta (js/config.js) : bouton « Affiche ou bâche ».
+  if (typeof BETA !== "undefined" && BETA.actif) document.querySelectorAll("[data-beta]").forEach((x) => { x.hidden = false; });
   const main = document.querySelector("main[data-id]");
   if (!main || typeof DB === "undefined" || !DB.actif()) return;
 

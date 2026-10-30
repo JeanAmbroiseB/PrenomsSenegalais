@@ -290,7 +290,7 @@
         <a class="btn-action" data-act="wa" target="_blank" rel="noopener"
            href="https://wa.me/?text=${encodeURIComponent(shareText(n))}">WhatsApp</a>
         ${n.page ? `<a class="btn-action" href="${pageOf(n)}">Page du prénom</a>` : ""}
-        ${BETA.actif ? `<button type="button" class="btn-action" data-act="affiche">Affiche à imprimer <span class="beta">bêta</span></button>` : ""}
+        ${BETA.actif ? `<button type="button" class="btn-action" data-act="affiche">Affiche ou bâche <span class="beta">bêta</span></button>` : ""}
         <button type="button" class="btn-action suggest" data-act="suggest">
           ${sens ? "Suggérer une modification" : "Donner la signification / suggérer une modification"}</button>
       </div>`;
@@ -526,21 +526,15 @@
     toast(msg);
   });
 
-  // ---------- Soutien et affiche à imprimer (bêta) ----------
+  // ---------- Affiche et bâche du prénom (bêta) ----------
   const lienSur = (u) => /^https:\/\//.test(u) ? u : "";
   function paiementsHtml() {
     const b = [];
-    if (lienSur(SOUTIEN.WAVE)) b.push(`<a class="btn-pay wave" href="${esc(SOUTIEN.WAVE)}" target="_blank" rel="noopener">Wave</a>`);
-    if (SOUTIEN.ORANGE_MONEY) b.push(`<button type="button" class="btn-pay om" data-copier="${esc(SOUTIEN.ORANGE_MONEY)}">` +
-      `Orange Money : ${esc(SOUTIEN.ORANGE_MONEY)} <small>Copier</small></button>`);
-    if (lienSur(SOUTIEN.PAYPAL)) b.push(`<a class="btn-pay paypal" href="${esc(SOUTIEN.PAYPAL)}" target="_blank" rel="noopener">PayPal</a>`);
+    if (lienSur(COMMANDES.WAVE)) b.push(`<a class="btn-pay wave" href="${esc(COMMANDES.WAVE)}" target="_blank" rel="noopener">Wave</a>`);
+    if (COMMANDES.ORANGE_MONEY) b.push(`<button type="button" class="btn-pay om" data-copier="${esc(COMMANDES.ORANGE_MONEY)}">` +
+      `Orange Money : ${esc(COMMANDES.ORANGE_MONEY)} <small>Copier</small></button>`);
+    if (lienSur(COMMANDES.PAYPAL)) b.push(`<a class="btn-pay paypal" href="${esc(COMMANDES.PAYPAL)}" target="_blank" rel="noopener">PayPal</a>`);
     return b.join("");
-  }
-  function initSoutien() {
-    if (!SOUTIEN.actif()) return;
-    $("#soutenir").hidden = false;
-    $("#soutien-moyens").innerHTML = paiementsHtml();
-    document.querySelectorAll("[data-soutien]").forEach((x) => { x.hidden = false; });
   }
   document.addEventListener("click", (ev) => {
     const b = ev.target.closest("[data-copier]");
@@ -549,12 +543,20 @@
 
   const dlgAff = $("#affiche-dialog");
   let afficheNom = null;
+  let styleAff = "classique";
+  $("#aff-format").innerHTML = Affiche.optionsFormats();
+  $("#aff-format").value = "bache-3x1";
+  $("#aff-styles").innerHTML = Object.entries(Affiche.STYLES).map(([id, st]) =>
+    `<button type="button" role="radio" data-style="${id}" style="--fond:${st.fond};--cadre:${st.cadre};--nom:${st.nomF}">` +
+    `<span class="pastille"></span>${esc(st.nom)}</button>`).join("");
   function donneesAffiche(n) {
     const et = n.e === "NC" ? "sénégalais" : ETHNIES[n.e].nom.toLowerCase();
     const dates = n.dates.map(formatDate).join(" et ");
     return {
       nom: n.nom, genre: n.g, fr: n.fr || "",
       famille: $("#aff-famille").value.trim(), mention: $("#aff-mention").value.trim(),
+      accroche: $("#aff-accroche").value.trim(),
+      format: $("#aff-format").value, style: styleAff, sansSens: !$("#aff-sens").checked,
       infos: [`Prénom ${et}`, dates ? `fêté le ${dates}` : ""].filter(Boolean).join(" · "),
       sens: n.sens ? n.sens.sens : "",
       source: n.par ? `contribution de ${n.par}` : SOURCES[n.src]
@@ -565,29 +567,46 @@
     const n = afficheNom;
     if (!n) return;
     const d = donneesAffiche(n);
+    const f = Affiche.FORMATS[d.format];
+    document.querySelectorAll("#aff-styles [data-style]").forEach((b) => b.setAttribute("aria-checked", b.dataset.style === styleAff));
+    // Aperçu : 900 px sur le grand côté, la page n'affiche que la place disponible.
+    const toile = $("#aff-toile");
+    const [l, h] = f.ratio >= 1 ? [900, Math.round(900 / f.ratio)] : [Math.round(900 * f.ratio), 900];
+    if (toile.width !== l || toile.height !== h) { toile.width = l; toile.height = h; }
+    $(".affiche-body").classList.toggle("paysage", f.ratio >= 1.3);
     const tour = ++dessin;
-    requestAnimationFrame(() => { if (tour === dessin) Affiche.dessiner($("#aff-toile"), d, { filigrane: true }); });
-    if (SOUTIEN.commandes()) {
-      const msg = `Bonjour, je souhaite commander l'affiche HD du prénom ${d.nom}${d.famille ? " " + d.famille : ""}` +
-        ` (${SOUTIEN.PRIX_AFFICHE}).${d.mention ? `\nMention : ${d.mention}` : ""}\nJ'ai payé par : ` +
-        `\nCode de la commande : ${Affiche.code(d)}`;
-      $("#aff-whatsapp").href = `https://wa.me/${SOUTIEN.WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    requestAnimationFrame(() => { if (tour === dessin) Affiche.dessiner(toile, d, { filigrane: true }); });
+    if (COMMANDES.actif()) {
+      const prix = COMMANDES.PRIX[f.groupe] || "";
+      $("#aff-prix").textContent = prix;
+      $("#aff-livraison").textContent = f.imprime
+        ? `${f.nom} : fichier PDF à la taille réelle, sans filigrane, à remettre à votre imprimeur.`
+        : `${f.nom} : image haute définition, sans filigrane, prête à partager.`;
+      const msg = `Bonjour, je souhaite commander « ${f.nom} » pour le prénom ${d.nom}${d.famille ? " " + d.famille : ""}` +
+        `${prix ? ` (${prix})` : ""}.\nStyle : ${Affiche.STYLES[d.style].nom}` +
+        `${d.accroche ? `\nPhrase d'accueil : ${d.accroche}` : ""}${d.mention ? `\nMention : ${d.mention}` : ""}` +
+        `\nJ'ai payé par : \nCode de la commande : ${Affiche.code(d)}`;
+      $("#aff-whatsapp").href = `https://wa.me/${COMMANDES.WHATSAPP}?text=${encodeURIComponent(msg)}`;
     }
   }
   function openAffiche(n) {
-    if (afficheNom !== n) { $("#aff-famille").value = ""; $("#aff-mention").value = ""; }
+    if (afficheNom !== n) ["#aff-famille", "#aff-mention", "#aff-accroche"].forEach((sel) => { $(sel).value = ""; });
     afficheNom = n;
-    const ok = SOUTIEN.commandes();
+    const ok = COMMANDES.actif();
     $("#aff-commande").hidden = !ok;
     $("#aff-bientot").hidden = ok;
-    if (ok) {
-      $("#aff-prix").textContent = SOUTIEN.PRIX_AFFICHE;
-      $("#aff-paiements").innerHTML = paiementsHtml();
-    }
+    if (ok) $("#aff-paiements").innerHTML = paiementsHtml();
     majAffiche();
     if (!dlgAff.open) dlgAff.showModal();
   }
-  ["#aff-famille", "#aff-mention"].forEach((sel) => $(sel).addEventListener("input", majAffiche));
+  ["#aff-famille", "#aff-mention", "#aff-accroche", "#aff-format", "#aff-sens"].forEach((sel) => {
+    $(sel).addEventListener("input", majAffiche);
+    $(sel).addEventListener("change", majAffiche);
+  });
+  $("#aff-styles").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-style]");
+    if (b) { styleAff = b.dataset.style; majAffiche(); }
+  });
   dlgAff.addEventListener("click", (ev) => {
     if (ev.target.closest("[data-close]") || ev.target === dlgAff) dlgAff.close();
   });
@@ -619,7 +638,7 @@
   }
 
   // #p=<id> affiche une fiche ; #suggerer=<id> et #proposer (liens des pages prenom/) ouvrent le formulaire,
-  // #affiche=<id> l'affiche à imprimer.
+  // #affiche=<id> l'affiche ou la bâche du prénom.
   function openFromHash() {
     if (location.hash === "#proposer") {
       history.replaceState(null, "", location.pathname + location.search);
@@ -639,7 +658,6 @@
   renderFavs();
   initToday();
   initStats();
-  initSoutien();
   if (BETA.change) toast(BETA.change === "on" ? "Mode bêta activé sur ce navigateur" : "Mode bêta désactivé sur ce navigateur");
   openFromHash();
   chargerContributions();

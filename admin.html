@@ -18,7 +18,7 @@
   </script>
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=11">
   <style>
     .admin { margin-top: 28px; margin-bottom: 48px; }
     .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -55,7 +55,10 @@
     .aff-admin input, .aff-admin textarea, .aff-admin select {
       border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; background: #fff; width: 100%; font: inherit;
     }
-    .aff-admin canvas { width: 100%; height: auto; border-radius: 6px; box-shadow: var(--shadow); }
+    .aff-admin .aff-toile { position: sticky; top: 12px; }
+    .aff-admin canvas { max-width: 100%; max-height: 80vh; width: auto; height: auto; border-radius: 6px; box-shadow: var(--shadow); }
+    .aff-admin label.inline { flex-direction: row; align-items: center; gap: 8px; }
+    .aff-admin label.inline input { width: auto; }
     @media (max-width: 760px) { .sugg, .aff-admin { grid-template-columns: 1fr; } .fields .row2 { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -93,29 +96,37 @@
         le site avec le nom de son auteur. Une signification déjà présente sur le site reste affichée en premier ;
         la nouvelle s'ajoute dans « Autres éclairages ». Une nouvelle écriture devient une « autre graphie ».</p>
       <details class="card affiche-admin">
-        <summary><strong>Affiches HD à imprimer</strong> <span class="beta">bêta</span></summary>
-        <p class="meta">Collez le message de commande reçu sur WhatsApp (il contient un code « PS1-… »). Vérifiez d'abord
-          la réception du paiement, corrigez le texte si besoin, puis téléchargez l'affiche et renvoyez-la sur WhatsApp.</p>
+        <summary><strong>Affiches et bâches à livrer</strong> <span class="beta">bêta</span></summary>
+        <p class="meta">Collez le message de commande reçu sur WhatsApp (il contient un code « PS2-… »). Vérifiez d'abord
+          la réception du paiement, corrigez le texte si besoin, puis téléchargez le fichier et renvoyez-le sur WhatsApp.
+          Les formats à imprimer sortent en PDF à la taille réelle ; les formats pour écrans en PNG.</p>
         <div class="aff-admin">
           <div class="fields">
             <label>Message ou code de commande <textarea id="a-code" rows="3"></textarea></label>
             <div class="row2">
+              <label>Format <select id="a-format"></select></label>
+              <label>Style <select id="a-style"></select></label>
+            </div>
+            <label>Phrase d'accueil <input id="a-accroche"></label>
+            <div class="row2">
               <label>Prénom <input id="a-nom"></label>
               <label>Nom de famille <input id="a-famille"></label>
             </div>
-            <label>Mention <input id="a-mention"></label>
+            <label>Date ou mention <input id="a-mention"></label>
             <label>Ligne d'informations <input id="a-infos"></label>
             <label>Signification <textarea id="a-sens" rows="3"></textarea></label>
+            <label class="inline"><input type="checkbox" id="a-sansSens"> Ne pas afficher la signification</label>
             <div class="row2">
               <label>Prononciation <input id="a-fr"></label>
               <label>Source <input id="a-source"></label>
             </div>
             <label>Couleur du prénom
-              <select id="a-genre"><option value="f">Rouge</option><option value="m">Vert</option></select>
+              <select id="a-genre"><option value="f">Fille</option><option value="m">Garçon</option></select>
             </label>
-            <button class="btn-primary" id="a-telecharger" type="button" disabled>Télécharger l'affiche HD (PNG, A4)</button>
+            <button class="btn-primary" id="a-telecharger" type="button" disabled>Télécharger le fichier</button>
+            <p class="meta" id="a-etat"></p>
           </div>
-          <canvas id="a-toile" width="500" height="707"></canvas>
+          <div class="aff-toile"><canvas id="a-toile" width="500" height="707"></canvas></div>
         </div>
       </details>
 
@@ -131,10 +142,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=9"></script>
-  <script src="data/prenoms.js?v=9"></script>
-  <script src="data/significations.js?v=9"></script>
-  <script src="js/affiche.js?v=9"></script>
+  <script src="js/config.js?v=11"></script>
+  <script src="data/prenoms.js?v=11"></script>
+  <script src="data/significations.js?v=11"></script>
+  <script src="js/affiche.js?v=11"></script>
   <script>
     (() => {
       const $ = (s) => document.querySelector(s);
@@ -343,36 +354,62 @@
     })();
   </script>
   <script>
-    // Affiches HD (bêta) : même dessin que l'aperçu du site, sans filigrane, en A4 à 300 dpi.
+    // Affiches et bâches (bêta) : même dessin que l'aperçu du site, sans filigrane, à la taille d'impression.
     (() => {
       const $ = (s) => document.querySelector(s);
-      const champs = ["nom", "famille", "mention", "infos", "sens", "fr", "source", "genre"];
-      const donnees = () => Object.fromEntries(champs.map((c) => [c, $("#a-" + c).value.trim()]));
+      $("#a-format").innerHTML = Affiche.optionsFormats();
+      $("#a-style").innerHTML = Object.entries(Affiche.STYLES).map(([id, st]) => `<option value="${id}">${st.nom}</option>`).join("");
+      const champs = ["nom", "famille", "accroche", "mention", "infos", "sens", "fr", "source", "genre", "format", "style"];
+      const donnees = () => ({
+        ...Object.fromEntries(champs.map((c) => [c, $("#a-" + c).value.trim()])),
+        sansSens: $("#a-sansSens").checked
+      });
+      const nomFichier = (d, ext) => `${d.format}-${[d.nom, d.famille].filter(Boolean).join("-")}.${ext}`;
       const apercu = () => {
         const d = donnees();
+        const f = Affiche.FORMATS[d.format];
         $("#a-telecharger").disabled = !d.nom;
-        if (d.nom) Affiche.dessiner($("#a-toile"), d, { filigrane: false });
+        $("#a-telecharger").textContent = f.imprime
+          ? `Télécharger le PDF (${f.nom}, ${f.pixels.join(" × ")} px)`
+          : `Télécharger l'image PNG (${f.pixels.join(" × ")} px)`;
+        const t = $("#a-toile");
+        const [l, h] = f.ratio >= 1 ? [700, Math.round(700 / f.ratio)] : [Math.round(700 * f.ratio), 700];
+        if (t.width !== l || t.height !== h) { t.width = l; t.height = h; }
+        if (d.nom) Affiche.dessiner(t, d, { filigrane: false });
       };
       $("#a-code").addEventListener("input", () => {
         const d = Affiche.lireCode($("#a-code").value);
         if (!d) return;
         champs.forEach((c) => { $("#a-" + c).value = c === "genre" ? (d.genre === "f" ? "f" : "m") : d[c]; });
+        $("#a-sansSens").checked = d.sansSens;
         apercu();
       });
-      champs.forEach((c) => $("#a-" + c).addEventListener("input", apercu));
+      [...champs, "sansSens"].forEach((c) => {
+        $("#a-" + c).addEventListener("input", apercu);
+        $("#a-" + c).addEventListener("change", apercu);
+      });
       $("#a-telecharger").addEventListener("click", async () => {
         const d = donnees();
-        const toile = document.createElement("canvas");
-        toile.width = 2480; toile.height = 3508;
-        await Affiche.dessiner(toile, d, { filigrane: false });
-        toile.toBlob((blob) => {
+        const f = Affiche.FORMATS[d.format];
+        const bouton = $("#a-telecharger"), etat = $("#a-etat");
+        bouton.disabled = true;
+        try {
+          const blob = f.imprime
+            ? await Affiche.pdf(d, {}, (p) => { etat.textContent = `Préparation du fichier… ${Math.round(p * 100)} %`; })
+            : await Affiche.png(d);
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
-          a.download = `affiche-${[d.nom, d.famille].filter(Boolean).join("-")}.png`;
+          a.download = nomFichier(d, f.imprime ? "pdf" : "png");
           a.click();
-          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-        }, "image/png");
+          setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+          etat.textContent = `Fichier prêt : ${(blob.size / 1e6).toFixed(1)} Mo.`;
+        } catch {
+          etat.textContent = "La préparation a échoué (mémoire insuffisante ?). Réessayez sur un ordinateur.";
+        } finally {
+          bouton.disabled = false;
+        }
       });
+      apercu();
     })();
   </script>
 </body>

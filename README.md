@@ -24,7 +24,7 @@ Puis ouvrir http://localhost:8080. On peut aussi ouvrir directement `index.html`
 | `supabase/schema.sql` | Création de la base des suggestions |
 | `js/app.js` | Le fonctionnement du site |
 | `js/fiche.js` | Ajoute les contributions publiées sur les pages des prénoms |
-| `js/affiche.js` | Dessin de l'affiche à imprimer (aperçu sur le site, version HD dans `admin.html`) |
+| `js/affiche.js` | Dessin des affiches et bâches (aperçu sur le site, PDF et PNG à livrer dans `admin.html`) |
 | `scripts/generer_pages.py` | Génère `prenom/*.html` et `sitemap.xml` à partir des données |
 | `css/style.css` | L'apparence |
 
@@ -97,19 +97,45 @@ Ensuite, aller sur `https://…/admin.html` et se connecter.
 Tant que `js/config.js` n'est pas rempli, les propositions restent dans le navigateur de la personne
 qui les envoie (mode test).
 
-## Soutien et affiches à imprimer (bêta)
+## Affiches et bâches du prénom (bêta)
 
-Deux moyens de financer le site, réglés dans `js/config.js`, rubrique `SOUTIEN` :
+Sur chaque fiche, le bouton « Affiche ou bâche » ouvre un petit éditeur avec un aperçu (avec filigrane) :
+
+- **formats** (liste dans `js/affiche.js`, rubrique `FORMATS`) :
+  - bâches : banderole 3 × 1 m et 2 × 1 m, fond photo 3 × 2 m, kakémono 85 × 200 cm ;
+  - affiches : A4, A3 ;
+  - écrans : statut WhatsApp (9:16), écran ou projection (16:9), publication carrée ;
+- **styles** : Classique, Nuit étoilée, Bogolan, Douceur (rubrique `STYLES`) ;
+- phrase d'accueil (« Bienvenue à », « Dalal ak jàmm »…), nom de famille, date ou mention, et le choix
+  d'afficher ou non la signification.
+
+La mise en page s'adapte toute seule au format : en colonne pour les formats hauts, sur deux colonnes
+(l'enfant à gauche, le sens du prénom à droite) pour les bannières. Un fichier 3:1 convient aussi pour une
+bâche de 4,5 × 1,5 m : l'imprimeur l'agrandit.
+
+Les commandes se règlent dans `js/config.js`, rubrique `COMMANDES` :
 
 ```js
 WAVE: "https://pay.wave.com/m/…",   // lien de paiement Wave
 ORANGE_MONEY: "77 123 45 67",       // numéro ou code marchand (affiché avec un bouton Copier)
 PAYPAL: "https://paypal.me/…",
-WHATSAPP: "221771234567",           // numéro qui reçoit les commandes d'affiches
-PRIX_AFFICHE: "2 000 FCFA"
+WHATSAPP: "221771234567",           // numéro qui reçoit les commandes
+PRIX: { "Bâches et banderoles": "5 000 FCFA", "Affiches": "2 000 FCFA", "Écrans": "1 000 FCFA" }
 ```
 
-Ce qui reste vide n'est pas affiché.
+Tant qu'il manque le numéro WhatsApp ou un moyen de paiement, l'éditeur reste en aperçu seulement.
+Quand tout est rempli, le visiteur paie puis envoie sa commande sur WhatsApp ; le message contient un code
+« PS2-… » qui reprend tous ses choix.
+
+**Livrer une commande** : dans `admin.html`, ouvrir « Affiches et bâches à livrer », coller le message reçu,
+**vérifier d'abord que le paiement est bien arrivé**, corriger si besoin, puis télécharger le fichier :
+
+- formats à imprimer : PDF à la taille réelle (300 dpi pour A4 et A3, 100 dpi pour les bâches, 75 dpi pour
+  le fond photo, ce que demandent les imprimeurs grand format), à remettre tel quel à l'imprimeur ;
+- formats pour écrans : image PNG.
+
+Une grande bâche se prépare en quelques secondes ; de préférence sur ordinateur (un téléphone peut manquer
+de mémoire). Le cadre laisse une marge de quelques centimètres pour les œillets.
 
 **Pour l'instant, ces fonctionnalités sont en « hibernation » : les visiteurs ne les voient pas.**
 Elles n'apparaissent que sur les navigateurs où le mode bêta a été activé :
@@ -120,16 +146,6 @@ Elles n'apparaissent que sur les navigateurs où le mode bêta a été activé :
 Le réglage est mémorisé dans le navigateur : il faut l'activer sur chaque téléphone ou ordinateur, et le
 refaire si les données du navigateur sont effacées. Le jour où vous voulez les ouvrir à tous, mettre
 `POUR_TOUS = true` dans `js/config.js` (rubrique `BETA`) et envoyer sur GitHub.
-
-- **Soutenir le projet** : dès qu'un moyen de paiement est rempli, une carte « Soutenir » apparaît dans
-  « À propos », avec un lien dans le pied de page (accueil et pages des prénoms).
-- **Affiche à imprimer** : sur chaque fiche, le bouton « Affiche à imprimer » montre un aperçu gratuit avec
-  filigrane (prénom, nom de famille, mention, signification, origine, date de fête). Si un moyen de paiement
-  **et** le numéro WhatsApp sont remplis, le visiteur peut commander la version HD : il paie, puis envoie sa
-  commande sur WhatsApp (le message contient un code « PS1-… »).
-- **Livrer une affiche** : dans `admin.html`, ouvrir « Affiches HD à imprimer », coller le message reçu,
-  **vérifier d'abord que le paiement est bien arrivé**, puis télécharger l'image (PNG A4, 300 dpi) et
-  l'envoyer au client sur WhatsApp.
 
 Ces numéros et liens sont visibles par tous les visiteurs : utiliser de préférence un compte marchand
 ou un numéro dédié.

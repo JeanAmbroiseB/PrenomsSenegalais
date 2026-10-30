@@ -17,9 +17,9 @@ const CONFIG = {
 };
 
 /*
- * Mode bêta : le soutien et l'affiche à imprimer ne sont visibles que sur les navigateurs où on l'a activé,
+ * Mode bêta : les affiches à commander ne sont visibles que sur les navigateurs où on l'a activé,
  * en ouvrant une page du site avec #beta-on à la fin de l'adresse (#beta-off pour le désactiver).
- * Pour les ouvrir à tous les visiteurs, remplacer « POUR_TOUS: false » par « POUR_TOUS: true ».
+ * Pour les ouvrir à tous les visiteurs, remplacer « POUR_TOUS = false » par « POUR_TOUS = true ».
  */
 const BETA = (() => {
   const POUR_TOUS = false;
@@ -36,19 +36,23 @@ const BETA = (() => {
 })();
 
 /*
- * Soutien et affiches à imprimer (bêta, voir ci-dessus).
- * Ce qui reste vide n'est pas affiché. Sans aucun moyen de paiement, le bouton « Soutenir » est masqué
- * et l'affiche reste disponible en aperçu seulement.
+ * Commandes d'affiches et de bâches (bêta, voir ci-dessus).
+ * Tant qu'il manque le numéro WhatsApp ou un moyen de paiement, l'affiche reste disponible en aperçu seulement.
+ * Les prix sont ceux du fichier à imprimer ; l'impression elle-même se fait chez l'imprimeur.
  */
-const SOUTIEN = {
+const COMMANDES = {
   WAVE: "",          // lien de paiement Wave, ex. "https://pay.wave.com/m/M_xxxxxxxx/c/sn/"
   ORANGE_MONEY: "",  // numéro ou code marchand Orange Money, ex. "77 123 45 67"
   PAYPAL: "",        // ex. "https://paypal.me/votrenom"
-  WHATSAPP: "",      // numéro qui reçoit les commandes d'affiches, format international sans « + », ex. "221771234567"
-  PRIX_AFFICHE: "2 000 FCFA"
+  WHATSAPP: "",      // numéro qui reçoit les commandes, format international sans « + », ex. "221771234567"
+  PRIX: {            // par groupe de formats (voir js/affiche.js)
+    "Bâches et banderoles": "5 000 FCFA",
+    "Affiches": "2 000 FCFA",
+    "Écrans": "1 000 FCFA"
+  }
 };
-SOUTIEN.actif = () => BETA.actif && Boolean(SOUTIEN.WAVE || SOUTIEN.ORANGE_MONEY || SOUTIEN.PAYPAL);
-SOUTIEN.commandes = () => SOUTIEN.actif() && /^\d{8,15}$/.test(SOUTIEN.WHATSAPP);
+COMMANDES.actif = () => BETA.actif && /^\d{8,15}$/.test(COMMANDES.WHATSAPP)
+  && Boolean(COMMANDES.WAVE || COMMANDES.ORANGE_MONEY || COMMANDES.PAYPAL);
 
 // Petit client commun au site et à la page d'administration.
 const DB = {
