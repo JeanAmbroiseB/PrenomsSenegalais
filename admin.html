@@ -18,7 +18,7 @@
   </script>
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=12">
   <style>
     .admin { margin-top: 28px; margin-bottom: 48px; }
     .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -112,6 +112,10 @@
               <label>Prénom <input id="a-nom"></label>
               <label>Nom de famille <input id="a-famille"></label>
             </div>
+            <div class="row2">
+              <label>Prénom avant <input id="a-avant"></label>
+              <label>Prénom après <input id="a-apres"></label>
+            </div>
             <label>Date ou mention <input id="a-mention"></label>
             <label>Ligne d'informations <input id="a-infos"></label>
             <label>Signification <textarea id="a-sens" rows="3"></textarea></label>
@@ -142,10 +146,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=11"></script>
-  <script src="data/prenoms.js?v=11"></script>
-  <script src="data/significations.js?v=11"></script>
-  <script src="js/affiche.js?v=11"></script>
+  <script src="js/config.js?v=12"></script>
+  <script src="data/prenoms.js?v=12"></script>
+  <script src="data/significations.js?v=12"></script>
+  <script src="js/affiche.js?v=12"></script>
   <script>
     (() => {
       const $ = (s) => document.querySelector(s);
@@ -359,12 +363,12 @@
       const $ = (s) => document.querySelector(s);
       $("#a-format").innerHTML = Affiche.optionsFormats();
       $("#a-style").innerHTML = Object.entries(Affiche.STYLES).map(([id, st]) => `<option value="${id}">${st.nom}</option>`).join("");
-      const champs = ["nom", "famille", "accroche", "mention", "infos", "sens", "fr", "source", "genre", "format", "style"];
+      const champs = ["nom", "avant", "apres", "famille", "accroche", "mention", "infos", "sens", "fr", "source", "genre", "format", "style"];
       const donnees = () => ({
         ...Object.fromEntries(champs.map((c) => [c, $("#a-" + c).value.trim()])),
         sansSens: $("#a-sansSens").checked
       });
-      const nomFichier = (d, ext) => `${d.format}-${[d.nom, d.famille].filter(Boolean).join("-")}.${ext}`;
+      const nomFichier = (d, ext) => `${d.format}-${Affiche.nomComplet(d).replace(/\s+/g, "-")}.${ext}`;
       const apercu = () => {
         const d = donnees();
         const f = Affiche.FORMATS[d.format];

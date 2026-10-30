@@ -138,6 +138,19 @@ const Affiche = (() => {
   function mesurer(ctx, b, s, largeur) {
     if (b.type === "logo") return { h: b.h * s };
     if (b.type === "orn" || b.type === "sep") return { h: 28 * s };
+    if (b.type === "nom") {
+      // Le prénom et les autres prénoms sur une ligne ; sur deux si la ligne devait devenir trop petite.
+      ctx.font = police(b.poids, b.taille * s);
+      const largeurDe = (segs) => ctx.measureText(segs.map((x) => x.texte).join(" ")).width;
+      const taillePour = (decoupe) => b.taille * s * Math.min(1, ...decoupe.map((segs) => largeur / largeurDe(segs)));
+      let decoupe = [b.segments];
+      if (b.segments.length > 1 && taillePour(decoupe) < b.taille * s * 0.62) {
+        const options = b.segments.slice(1).map((_, i) => [b.segments.slice(0, i + 1), b.segments.slice(i + 1)]);
+        decoupe = options.reduce((m, o) => (taillePour(o) > taillePour(m) ? o : m), options[0]);
+      }
+      const t = taillePour(decoupe);
+      return { h: decoupe.length * t * 1.12, t, decoupe };
+    }
     if (b.type === "ligne") {
       let t = b.taille * s;
       ctx.font = police(b.poids, t);
@@ -203,6 +216,21 @@ const Affiche = (() => {
         const u = p.s, y = p.y + p.h / 2;
         ctx.fillStyle = st.filet; ctx.fillRect(cx - 250 * u, y - 1.5 * u, 210 * u, 3 * u); ctx.fillRect(cx + 40 * u, y - 1.5 * u, 210 * u, 3 * u);
         ctx.fillStyle = st.accent; etoile(ctx, cx, y, 14 * u);
+      } else if (b.type === "nom") {
+        ctx.font = police(b.poids, p.t);
+        const espace = ctx.measureText(" ").width;
+        const aligne = ctx.textAlign;
+        ctx.textAlign = "left";
+        p.decoupe.forEach((segs, i) => {
+          const largeurs = segs.map((x) => ctx.measureText(x.texte).width);
+          let x = cx - (largeurs.reduce((a, c) => a + c, 0) + espace * (segs.length - 1)) / 2;
+          segs.forEach((seg, j) => {
+            ctx.fillStyle = seg.couleur;
+            ctx.fillText(seg.texte, x, p.y + p.t * (0.86 + i * 1.12));
+            x += largeurs[j] + espace;
+          });
+        });
+        ctx.textAlign = aligne;
       } else if (b.type === "ligne") {
         ctx.font = police(b.poids, p.t);
         ctx.fillText(b.texte, cx, p.y + p.t * 0.86);
@@ -214,7 +242,7 @@ const Affiche = (() => {
   }
 
   /**
-   * d : { nom, famille, accroche, mention, fr, infos, sens, source, genre, format, style, sansSens }
+   * d : { nom, avant, apres, famille, accroche, mention, fr, infos, sens, source, genre, format, style, sansSens }
    * opts : { filigrane, logo, largeurPx, y0 } — largeurPx et y0 servent à dessiner une bande d'une grande image.
    */
   async function dessiner(toile, d, { filigrane = true, logo = "assets/arbre-hd.png", largeurPx, y0 = 0 } = {}) {
@@ -232,6 +260,14 @@ const Affiche = (() => {
 
     const marge = decor(ctx, W, H, st);
     const couleurNom = d.genre === "f" ? st.nomF : st.nomM;
+    // Le prénom traditionnel est souvent le 2e ou le 3e : les autres prénoms l'entourent, et le sens lui reste attribué.
+    const accompagne = Boolean(d.avant || d.apres);
+    const segments = [
+      d.avant && { texte: d.avant, couleur: st.encre },
+      { texte: d.nom, couleur: couleurNom },
+      d.apres && { texte: d.apres, couleur: st.encre }
+    ].filter(Boolean);
+    const infos = accompagne && d.infos ? d.infos.replace(/^Prénom/, `${d.nom} : prénom`) : d.infos;
 
     // Pied de page : toujours en bas, au centre.
     ctx.fillStyle = st.doux;
@@ -243,17 +279,17 @@ const Affiche = (() => {
       { type: "orn", avant: 0 },
       img && { type: "logo", h: 210, avant: 26 },
       d.accroche && { type: "ligne", texte: d.accroche, poids: 500, taille: 54, couleur: st.encre, avant: 30 },
-      { type: "ligne", texte: d.nom, poids: 700, taille: 180, couleur: couleurNom, avant: d.accroche ? 4 : 30 },
+      { type: "nom", segments, poids: 700, taille: 180, avant: d.accroche ? 4 : 30 },
       d.famille && { type: "ligne", texte: d.famille, poids: 500, taille: 62, couleur: st.encre, avant: 10 },
-      d.fr && { type: "ligne", texte: `Se prononce à peu près : ${d.fr}`, poids: 400, taille: 30, couleur: st.doux, avant: 16 },
+      d.fr && { type: "ligne", texte: `${accompagne ? d.nom + " se prononce" : "Se prononce"} à peu près : ${d.fr}`, poids: 400, taille: 30, couleur: st.doux, avant: 16 },
       d.mention && { type: "ligne", texte: d.mention, poids: 600, taille: 44, couleur: st.accent, avant: 30 }
     ].filter(Boolean);
     const sens = d.sansSens ? "" : (d.sens || "").replace(/\s+/g, " ").trim();
     const sensBlocs = [
       { type: "sep", avant: 0 },
-      d.infos && { type: "ligne", texte: d.infos, poids: 500, taille: 32, couleur: st.accent, avant: 26 },
+      infos && { type: "ligne", texte: infos, poids: 500, taille: 32, couleur: st.accent, avant: 26 },
       sens
-        ? { type: "para", texte: `« ${sens} »`, poids: 400, taille: 44, max: 7, couleur: st.encre, avant: 30 }
+        ? { type: "para", texte: `« ${sens} »`, poids: 400, taille: f.ratio < 0.7 ? 62 : 44, max: 7, couleur: st.encre, avant: 30 }
         // Signification inconnue : une phrase neutre plutôt qu'un vide.
         : { type: "para", texte: "Un prénom de chez nous,\ntransmis de génération en génération.", poids: 400, taille: 36, max: 3, couleur: st.doux, avant: 30 }
     ].filter(Boolean);
@@ -353,7 +389,7 @@ const Affiche = (() => {
 
   // ---------- Code de commande : les données de l'affiche, à coller dans admin.html ----------
   const CHAMPS1 = ["nom", "famille", "mention", "fr", "infos", "sens", "source", "genre"];
-  const CHAMPS = [...CHAMPS1, "accroche", "format", "style", "sansSens"];
+  const CHAMPS = [...CHAMPS1, "accroche", "format", "style", "sansSens", "avant", "apres"];
   const b64 = (o) => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   function code(d) {
@@ -380,5 +416,8 @@ const Affiche = (() => {
     return Object.entries(groupes).map(([g, o]) => `<optgroup label="${g}">${o.join("")}</optgroup>`).join("");
   }
 
-  return { dessiner, pdf, png, code, lireCode, optionsFormats, FORMATS, STYLES };
+  // Le nom tel qu'il est écrit sur l'affiche, pour les messages et les noms de fichiers.
+  const nomComplet = (d) => [d.avant, d.nom, d.apres, d.famille].filter(Boolean).join(" ");
+
+  return { nomComplet, dessiner, pdf, png, code, lireCode, optionsFormats, FORMATS, STYLES };
 })();

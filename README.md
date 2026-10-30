@@ -106,6 +106,8 @@ Sur chaque fiche, le bouton « Affiche ou bâche » ouvre un petit éditeur avec
   - affiches : A4, A3 ;
   - écrans : statut WhatsApp (9:16), écran ou projection (16:9), publication carrée ;
 - **styles** : Classique, Nuit étoilée, Bogolan, Douceur (rubrique `STYLES`) ;
+- les autres prénoms de l'enfant, avant ou après le prénom traditionnel (qui reste en premier si on les laisse
+  vides) : sur l'affiche, le prénom traditionnel garde sa couleur et le sens lui reste attribué ;
 - phrase d'accueil (« Bienvenue à », « Dalal ak jàmm »…), nom de famille, date ou mention, et le choix
   d'afficher ou non la signification.
 

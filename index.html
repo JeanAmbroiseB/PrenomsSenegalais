@@ -29,7 +29,7 @@
   <meta property="og:locale" content="fr_FR">
   <meta property="og:url" content="https://www.prenomssenegalais.com/">
   <meta property="og:title" content="Prénoms Sénégalais — trouvez un prénom de chez nous">
-  <meta property="og:description" content="Plus de 560 prénoms wolof, sérères, diola, peuls, mandingues, soninkés, manjaques, bassari et lébous, avec leur signification et leur date de fête.">
+  <meta property="og:description" content="Plus de 660 prénoms wolof, sérères, diola, peuls, mandingues, soninkés, manjaques, bassari et lébous, avec leur signification et leur date de fête.">
   <meta property="og:image" content="https://www.prenomssenegalais.com/assets/partage.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
   <header class="site-header">
@@ -79,7 +79,7 @@
     <section class="wrap generator" id="generateur">
       <div class="controls card">
         <h1>Trouvez un prénom sénégalais</h1>
-        <p class="lead">Choisissez une ethnie et un sexe, puis laissez le hasard faire.</p>
+        <p class="lead">Un premier, un deuxième ou un troisième prénom pour votre enfant : choisissez une ethnie et un sexe, puis laissez le hasard faire.</p>
 
         <fieldset>
           <legend>Ethnie</legend>
@@ -142,6 +142,8 @@
         <label class="check"><input type="checkbox" id="f-sens"> Avec signification</label>
       </div>
       <p class="muted" id="explore-count"></p>
+      <p class="explore-vide" id="explore-vide" hidden>Ce prénom n'est pas encore dans notre liste.
+        <button type="button" class="link-btn" data-propose>Proposez-le</button> pour qu'il soit transmis lui aussi.</p>
       <div class="name-grid" id="explore-list"></div>
       <button class="btn-ghost more" id="explore-more" type="button" hidden>Afficher plus</button>
     </section>
@@ -369,6 +371,20 @@
             <select id="aff-format"></select>
           </label>
           <div class="aff-styles" role="radiogroup" aria-label="Style" id="aff-styles"></div>
+          <div class="aff-prenoms">
+            <p class="aff-prenoms-titre">Prénoms de l'enfant</p>
+            <p class="field-hint">Un prénom traditionnel vient souvent en deuxième ou troisième position : ajoutez les autres
+              si besoin, ou laissez vide pour le garder en premier.</p>
+            <div class="aff-prenoms-ligne">
+              <label><span>Avant <span class="opt">(facultatif)</span></span>
+                <input id="aff-avant" maxlength="40" placeholder="ex. Aïcha" autocomplete="off">
+              </label>
+              <p class="aff-prenom-fixe" id="aff-nom"></p>
+              <label><span>Après <span class="opt">(facultatif)</span></span>
+                <input id="aff-apres" maxlength="40" placeholder="ex. Marie" autocomplete="off">
+              </label>
+            </div>
+          </div>
           <label><span>Phrase d'accueil <span class="opt">(facultatif)</span></span>
             <input id="aff-accroche" maxlength="40" placeholder="ex. Bienvenue à" list="aff-accroches" autocomplete="off">
             <datalist id="aff-accroches">
@@ -402,10 +418,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=11"></script>
-  <script src="data/prenoms.js?v=11"></script>
-  <script src="data/significations.js?v=11"></script>
-  <script src="js/affiche.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/config.js?v=12"></script>
+  <script src="data/prenoms.js?v=12"></script>
+  <script src="data/significations.js?v=12"></script>
+  <script src="js/affiche.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>

@@ -291,15 +291,24 @@ a.btn-ghost { display: inline-block; text-decoration: none; }
 .aff-styles button[aria-checked="true"] { border-color: var(--green); background: var(--green-soft); font-weight: 600; }
 .aff-styles .pastille { width: 22px; height: 22px; border-radius: 50%; background: var(--fond);
   box-shadow: inset 0 0 0 4px var(--cadre), inset 0 0 0 7px var(--fond), inset 0 0 0 11px var(--nom); }
+.aff-prenoms { background: var(--cream); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.aff-prenoms .field-hint { margin: 0; }
+.aff-prenoms-titre { margin: 0; font-weight: 600; }
+.aff-prenoms-ligne { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: end; }
+.aff-prenom-fixe { margin: 0 0 10px; font-weight: 700; color: var(--green-dark); }
+.affiche-body.paysage .aff-prenoms { grid-column: 1 / -1; }
 .aff-commande { background: var(--cream); border-radius: 12px; padding: 14px 16px; }
 .aff-commande h3 { margin: 0 0 4px; }
 .aff-commande ol { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
 .aff-commande .paiements { margin-top: 6px; }
 a.btn-primary { display: inline-block; text-decoration: none; }
 @media (max-width: 700px) {
-  .affiche-body, .affiche-body.paysage .affiche-champs { grid-template-columns: 1fr; }
+  .affiche-body, .affiche-body.paysage .affiche-champs, .aff-prenoms-ligne { grid-template-columns: 1fr; }
+  .aff-prenom-fixe { margin: 0; text-align: center; }
   .aff-apercu canvas { max-height: 46vh; }
 }
+
+.explore-vide { background: var(--cream); border-radius: 12px; padding: 14px 16px; margin: 0; }
 
 /* ---------- Engagement du contributeur ---------- */
 .engagement { background: var(--yellow-soft); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }

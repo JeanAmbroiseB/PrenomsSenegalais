@@ -416,7 +416,12 @@
     $("#explore-count").textContent = `${list.length} prénom${list.length > 1 ? "s" : ""}`;
     $("#explore-list").innerHTML = list.slice(0, state.exploreLimit).map(tileHtml).join("");
     $("#explore-more").hidden = list.length <= state.exploreLimit;
+    $("#explore-vide").hidden = Boolean(list.length) || !q;
   }
+  // Le prénom cherché et non trouvé préremplit le formulaire ouvert par « Proposez-le ».
+  $("#explore-vide").addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-propose]")) $("#s-prenom").value = $("#q").value.trim();
+  });
   $("#f-ethnie").innerHTML = `<option value="">Toutes les ethnies</option>` +
     Object.entries(ETHNIES).map(([c, et]) => `<option value="${c}">${esc(et.nom)}</option>`).join("");
   ["#q", "#f-ethnie", "#f-genre", "#f-sens"].forEach((sel) =>
@@ -556,6 +561,7 @@
       nom: n.nom, genre: n.g, fr: n.fr || "",
       famille: $("#aff-famille").value.trim(), mention: $("#aff-mention").value.trim(),
       accroche: $("#aff-accroche").value.trim(),
+      avant: $("#aff-avant").value.trim(), apres: $("#aff-apres").value.trim(),
       format: $("#aff-format").value, style: styleAff, sansSens: !$("#aff-sens").checked,
       infos: [`Prénom ${et}`, dates ? `fêté le ${dates}` : ""].filter(Boolean).join(" · "),
       sens: n.sens ? n.sens.sens : "",
@@ -582,7 +588,7 @@
       $("#aff-livraison").textContent = f.imprime
         ? `${f.nom} : fichier PDF à la taille réelle, sans filigrane, à remettre à votre imprimeur.`
         : `${f.nom} : image haute définition, sans filigrane, prête à partager.`;
-      const msg = `Bonjour, je souhaite commander « ${f.nom} » pour le prénom ${d.nom}${d.famille ? " " + d.famille : ""}` +
+      const msg = `Bonjour, je souhaite commander « ${f.nom} » pour ${Affiche.nomComplet(d)}` +
         `${prix ? ` (${prix})` : ""}.\nStyle : ${Affiche.STYLES[d.style].nom}` +
         `${d.accroche ? `\nPhrase d'accueil : ${d.accroche}` : ""}${d.mention ? `\nMention : ${d.mention}` : ""}` +
         `\nJ'ai payé par : \nCode de la commande : ${Affiche.code(d)}`;
@@ -590,8 +596,9 @@
     }
   }
   function openAffiche(n) {
-    if (afficheNom !== n) ["#aff-famille", "#aff-mention", "#aff-accroche"].forEach((sel) => { $(sel).value = ""; });
+    if (afficheNom !== n) ["#aff-famille", "#aff-mention", "#aff-accroche", "#aff-avant", "#aff-apres"].forEach((sel) => { $(sel).value = ""; });
     afficheNom = n;
+    $("#aff-nom").textContent = n.nom;
     const ok = COMMANDES.actif();
     $("#aff-commande").hidden = !ok;
     $("#aff-bientot").hidden = ok;
@@ -599,7 +606,7 @@
     majAffiche();
     if (!dlgAff.open) dlgAff.showModal();
   }
-  ["#aff-famille", "#aff-mention", "#aff-accroche", "#aff-format", "#aff-sens"].forEach((sel) => {
+  ["#aff-avant", "#aff-apres", "#aff-famille", "#aff-mention", "#aff-accroche", "#aff-format", "#aff-sens"].forEach((sel) => {
     $(sel).addEventListener("input", majAffiche);
     $(sel).addEventListener("change", majAffiche);
   });
