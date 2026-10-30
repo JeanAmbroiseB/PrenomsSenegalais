@@ -18,7 +18,7 @@
   </script>
   <link rel="icon" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=13">
   <style>
     .admin { margin-top: 28px; margin-bottom: 48px; }
     .admin-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -57,6 +57,8 @@
     }
     .aff-admin .aff-toile { position: sticky; top: 12px; }
     .aff-admin canvas { max-width: 100%; max-height: 80vh; width: auto; height: auto; border-radius: 6px; box-shadow: var(--shadow); }
+    .aff-admin .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .aff-admin input[type="range"] { padding: 0; border: 0; accent-color: var(--green); }
     .aff-admin label.inline { flex-direction: row; align-items: center; gap: 8px; }
     .aff-admin label.inline input { width: auto; }
     @media (max-width: 760px) { .sugg, .aff-admin { grid-template-columns: 1fr; } .fields .row2 { grid-template-columns: 1fr; } }
@@ -107,6 +109,13 @@
               <label>Format <select id="a-format"></select></label>
               <label>Style <select id="a-style"></select></label>
             </div>
+            <label>Photo de l'enfant (reçue sur WhatsApp) <input type="file" id="a-photo" accept="image/*"></label>
+            <div class="row3">
+              <label>Zoom <input type="range" id="a-zoom" min="1" max="3" step="0.05" value="1"></label>
+              <label>Gauche – droite <input type="range" id="a-px" min="0" max="100" value="50"></label>
+              <label>Haut – bas <input type="range" id="a-py" min="0" max="100" value="40"></label>
+            </div>
+            <p class="warn" id="a-photo-note" hidden></p>
             <label>Phrase d'accueil <input id="a-accroche"></label>
             <div class="row2">
               <label>Prénom <input id="a-nom"></label>
@@ -146,10 +155,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=12"></script>
-  <script src="data/prenoms.js?v=12"></script>
-  <script src="data/significations.js?v=12"></script>
-  <script src="js/affiche.js?v=12"></script>
+  <script src="js/config.js?v=13"></script>
+  <script src="data/prenoms.js?v=13"></script>
+  <script src="data/significations.js?v=13"></script>
+  <script src="js/affiche.js?v=13"></script>
   <script>
     (() => {
       const $ = (s) => document.querySelector(s);
@@ -364,10 +373,18 @@
       $("#a-format").innerHTML = Affiche.optionsFormats();
       $("#a-style").innerHTML = Object.entries(Affiche.STYLES).map(([id, st]) => `<option value="${id}">${st.nom}</option>`).join("");
       const champs = ["nom", "avant", "apres", "famille", "accroche", "mention", "infos", "sens", "fr", "source", "genre", "format", "style"];
+      let photo = null, photoAttendue = false;
       const donnees = () => ({
         ...Object.fromEntries(champs.map((c) => [c, $("#a-" + c).value.trim()])),
-        sansSens: $("#a-sansSens").checked
+        sansSens: $("#a-sansSens").checked,
+        photo, zoom: Number($("#a-zoom").value), px: Number($("#a-px").value), py: Number($("#a-py").value)
       });
+      const notePhoto = (floue) => {
+        const note = $("#a-photo-note");
+        note.textContent = photoAttendue && !photo ? "Cette commande comporte une photo : ajoutez celle reçue sur WhatsApp."
+          : floue ? "Cette photo est petite pour ce format : elle risque d'être floue. Demandez l'originale au client." : "";
+        note.hidden = !note.textContent;
+      };
       const nomFichier = (d, ext) => `${d.format}-${Affiche.nomComplet(d).replace(/\s+/g, "-")}.${ext}`;
       const apercu = () => {
         const d = donnees();
@@ -379,16 +396,24 @@
         const t = $("#a-toile");
         const [l, h] = f.ratio >= 1 ? [700, Math.round(700 / f.ratio)] : [Math.round(700 * f.ratio), 700];
         if (t.width !== l || t.height !== h) { t.width = l; t.height = h; }
-        if (d.nom) Affiche.dessiner(t, d, { filigrane: false });
+        notePhoto(false);
+        if (d.nom) Affiche.dessiner(t, d, { filigrane: false }).then(({ photoFloue }) => notePhoto(photoFloue));
       };
       $("#a-code").addEventListener("input", () => {
         const d = Affiche.lireCode($("#a-code").value);
         if (!d) return;
         champs.forEach((c) => { $("#a-" + c).value = c === "genre" ? (d.genre === "f" ? "f" : "m") : d[c]; });
         $("#a-sansSens").checked = d.sansSens;
+        $("#a-zoom").value = d.zoom; $("#a-px").value = d.px; $("#a-py").value = d.py;
+        photo = null; photoAttendue = d.avecPhoto; $("#a-photo").value = "";
         apercu();
       });
-      [...champs, "sansSens"].forEach((c) => {
+      $("#a-photo").addEventListener("change", async (ev) => {
+        if (!ev.target.files[0]) return;
+        try { photo = await Affiche.chargerPhoto(ev.target.files[0]); apercu(); }
+        catch { $("#a-etat").textContent = "Cette image n'a pas pu être ouverte."; }
+      });
+      [...champs, "sansSens", "zoom", "px", "py"].forEach((c) => {
         $("#a-" + c).addEventListener("input", apercu);
         $("#a-" + c).addEventListener("change", apercu);
       });

@@ -549,6 +549,16 @@
   const dlgAff = $("#affiche-dialog");
   let afficheNom = null;
   let styleAff = "classique";
+  let photoAff = null;
+  function retirerPhoto() {
+    if (photoAff) URL.revokeObjectURL(photoAff.src);
+    photoAff = null;
+    $("#aff-photo").value = "";
+    $("#aff-zoom").value = 1; $("#aff-px").value = 50; $("#aff-py").value = 40;
+    $("#aff-cadrage").hidden = $("#aff-photo-retirer").hidden = $("#aff-photo-floue").hidden = true;
+    $("#aff-etape-photo").hidden = true;
+    $("#aff-photo-libelle").textContent = "Choisir une photo";
+  }
   $("#aff-format").innerHTML = Affiche.optionsFormats();
   $("#aff-format").value = "bache-3x1";
   $("#aff-styles").innerHTML = Object.entries(Affiche.STYLES).map(([id, st]) =>
@@ -562,6 +572,7 @@
       famille: $("#aff-famille").value.trim(), mention: $("#aff-mention").value.trim(),
       accroche: $("#aff-accroche").value.trim(),
       avant: $("#aff-avant").value.trim(), apres: $("#aff-apres").value.trim(),
+      photo: photoAff, zoom: Number($("#aff-zoom").value), px: Number($("#aff-px").value), py: Number($("#aff-py").value),
       format: $("#aff-format").value, style: styleAff, sansSens: !$("#aff-sens").checked,
       infos: [`Prénom ${et}`, dates ? `fêté le ${dates}` : ""].filter(Boolean).join(" · "),
       sens: n.sens ? n.sens.sens : "",
@@ -581,7 +592,11 @@
     if (toile.width !== l || toile.height !== h) { toile.width = l; toile.height = h; }
     $(".affiche-body").classList.toggle("paysage", f.ratio >= 1.3);
     const tour = ++dessin;
-    requestAnimationFrame(() => { if (tour === dessin) Affiche.dessiner(toile, d, { filigrane: true }); });
+    requestAnimationFrame(async () => {
+      if (tour !== dessin) return;
+      const { photoFloue } = await Affiche.dessiner(toile, d, { filigrane: true });
+      if (tour === dessin) $("#aff-photo-floue").hidden = !photoFloue;
+    });
     if (COMMANDES.actif()) {
       const prix = COMMANDES.PRIX[f.groupe] || "";
       $("#aff-prix").textContent = prix;
@@ -591,12 +606,14 @@
       const msg = `Bonjour, je souhaite commander « ${f.nom} » pour ${Affiche.nomComplet(d)}` +
         `${prix ? ` (${prix})` : ""}.\nStyle : ${Affiche.STYLES[d.style].nom}` +
         `${d.accroche ? `\nPhrase d'accueil : ${d.accroche}` : ""}${d.mention ? `\nMention : ${d.mention}` : ""}` +
+        `${d.photo ? "\nPhoto : je l'envoie juste après ce message." : ""}` +
         `\nJ'ai payé par : \nCode de la commande : ${Affiche.code(d)}`;
       $("#aff-whatsapp").href = `https://wa.me/${COMMANDES.WHATSAPP}?text=${encodeURIComponent(msg)}`;
     }
   }
   function openAffiche(n) {
     if (afficheNom !== n) ["#aff-famille", "#aff-mention", "#aff-accroche", "#aff-avant", "#aff-apres"].forEach((sel) => { $(sel).value = ""; });
+    if (afficheNom !== n) retirerPhoto();
     afficheNom = n;
     $("#aff-nom").textContent = n.nom;
     const ok = COMMANDES.actif();
@@ -606,10 +623,26 @@
     majAffiche();
     if (!dlgAff.open) dlgAff.showModal();
   }
-  ["#aff-avant", "#aff-apres", "#aff-famille", "#aff-mention", "#aff-accroche", "#aff-format", "#aff-sens"].forEach((sel) => {
+  ["#aff-avant", "#aff-apres", "#aff-famille", "#aff-mention", "#aff-accroche", "#aff-format", "#aff-sens", "#aff-zoom", "#aff-px", "#aff-py"].forEach((sel) => {
     $(sel).addEventListener("input", majAffiche);
     $(sel).addEventListener("change", majAffiche);
   });
+  $("#aff-photo").addEventListener("change", async (ev) => {
+    const fichier = ev.target.files[0];
+    if (!fichier) return;
+    try {
+      const img = await Affiche.chargerPhoto(fichier);
+      retirerPhoto();
+      photoAff = img;
+      $("#aff-cadrage").hidden = $("#aff-photo-retirer").hidden = false;
+      $("#aff-etape-photo").hidden = false;
+      $("#aff-photo-libelle").textContent = "Changer de photo";
+      majAffiche();
+    } catch {
+      toast("Cette image n'a pas pu être ouverte. Essayez une photo JPG ou PNG.");
+    }
+  });
+  $("#aff-photo-retirer").addEventListener("click", () => { retirerPhoto(); majAffiche(); });
   $("#aff-styles").addEventListener("click", (ev) => {
     const b = ev.target.closest("[data-style]");
     if (b) { styleAff = b.dataset.style; majAffiche(); }

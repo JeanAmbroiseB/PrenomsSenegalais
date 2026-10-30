@@ -136,7 +136,7 @@ const Affiche = (() => {
   // Chaque bloc a une taille de base (pour une colonne de 820 unités de large) ; on cherche le plus grand
   // facteur d'échelle pour lequel la colonne tient dans sa boîte.
   function mesurer(ctx, b, s, largeur) {
-    if (b.type === "logo") return { h: b.h * s };
+    if (b.type === "logo" || b.type === "photo") return { h: b.h * s };
     if (b.type === "orn" || b.type === "sep") return { h: 28 * s };
     if (b.type === "nom") {
       // Le prénom et les autres prénoms sur une ligne ; sur deux si la ligne devait devenir trop petite.
@@ -179,7 +179,7 @@ const Affiche = (() => {
     const mesures = blocs.map((b) => mesurer(ctx, b, s, boite.l));
     let reste = Math.max(0, boite.h - total(s));
     // Format haut et étroit : le baobab grandit pour occuper une partie du vide.
-    const iLogo = blocs.findIndex((b) => b.type === "logo");
+    const iLogo = blocs.findIndex((b) => b.type === "logo" || b.type === "photo");
     if (iLogo >= 0 && reste > 0) {
       const plus = Math.min(reste * 0.5, mesures[iLogo].h * 1.2);
       mesures[iLogo].h += plus;
@@ -196,11 +196,28 @@ const Affiche = (() => {
     });
   }
 
+  // La photo remplit un cercle : d.zoom part de 1 (photo entière dans le cercle), d.px et d.py vont de 0 à 100.
+  function peindrePhoto(ctx, d, cx, cy, diametre, st) {
+    const ph = d.photo, iw = ph.naturalWidth, ih = ph.naturalHeight;
+    const e = diametre / Math.min(iw, ih) * d.zoom;
+    const w = iw * e, h = ih * e;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, diametre / 2, 0, 2 * Math.PI); ctx.clip();
+    ctx.drawImage(ph, cx - diametre / 2 - (w - diametre) * d.px / 100, cy - diametre / 2 - (h - diametre) * d.py / 100, w, h);
+    ctx.restore();
+    ctx.strokeStyle = st.cadre; ctx.lineWidth = diametre * 0.018;
+    ctx.beginPath(); ctx.arc(cx, cy, diametre / 2, 0, 2 * Math.PI); ctx.stroke();
+    ctx.strokeStyle = st.filet; ctx.lineWidth = diametre * 0.006;
+    ctx.beginPath(); ctx.arc(cx, cy, diametre / 2 + diametre * 0.024, 0, 2 * Math.PI); ctx.stroke();
+  }
+
   function peindre(ctx, places, cx, st, img) {
     for (const p of places) {
       const b = p.b;
       ctx.fillStyle = b.couleur || st.encre;
-      if (b.type === "logo" && img) {
+      if (b.type === "photo") {
+        peindrePhoto(ctx, b.d, cx, p.y + p.h / 2, p.h, st);
+      } else if (b.type === "logo" && img) {
         const w = p.h * img.width / img.height;
         if (st.medaillon) {
           // Fond sombre : le baobab dans un médaillon clair, pour garder la mère et l'enfant lisibles.
@@ -242,7 +259,9 @@ const Affiche = (() => {
   }
 
   /**
-   * d : { nom, avant, apres, famille, accroche, mention, fr, infos, sens, source, genre, format, style, sansSens }
+   * d : { nom, avant, apres, famille, accroche, mention, fr, infos, sens, source, genre, format, style, sansSens, photo, zoom, px, py }
+   * photo : une image chargée (jamais envoyée nulle part) ; sans elle, c'est le baobab qui s'affiche.
+   * Renvoie { photoFloue } : vrai si la photo sera trop agrandie à la taille d'impression.
    * opts : { filigrane, logo, largeurPx, y0 } — largeurPx et y0 servent à dessiner une bande d'une grande image.
    */
   async function dessiner(toile, d, { filigrane = true, logo = "assets/arbre-hd.png", largeurPx, y0 = 0 } = {}) {
@@ -275,9 +294,15 @@ const Affiche = (() => {
     ctx.font = police(600, 24); ctx.fillText("Prénoms Sénégalais · prenomssenegalais.com", W / 2, pied);
     if (d.source) { ctx.font = police(400, 18); ctx.fillText(`Source : ${d.source}`, W / 2, pied + 28); }
 
+    const avecPhoto = Boolean(d.photo?.naturalWidth);
+    const cadrage = avecPhoto ? { photo: d.photo, zoom: Number(d.zoom) || 1, px: d.px ?? 50, py: d.py ?? 40 } : null;
+    // Bannière longue : la photo a sa propre colonne, grande, à gauche. Sinon elle prend la place du baobab.
+    const photoAPart = avecPhoto && f.ratio >= 2.5;
+    let diametre = 0;
     const identite = [
       { type: "orn", avant: 0 },
-      img && { type: "logo", h: 210, avant: 26 },
+      avecPhoto && !photoAPart && { type: "photo", h: 340, d: cadrage, avant: 26 },
+      !avecPhoto && img && { type: "logo", h: 210, avant: 26 },
       d.accroche && { type: "ligne", texte: d.accroche, poids: 500, taille: 54, couleur: st.encre, avant: 30 },
       { type: "nom", segments, poids: 700, taille: 180, avant: d.accroche ? 4 : 30 },
       d.famille && { type: "ligne", texte: d.famille, poids: 500, taille: 62, couleur: st.encre, avant: 10 },
@@ -297,16 +322,25 @@ const Affiche = (() => {
     const haut = marge + 10, bas = pied - 50;
     if (f.ratio >= 1.3) {
       // Paysage : l'enfant à gauche, le sens du prénom à droite.
-      const gauche = { x: marge + 20, l: (W - 2 * marge) * 0.54 - 40, y: haut, h: bas - haut };
-      const droite = { x: marge + (W - 2 * marge) * 0.54 + 30, l: (W - 2 * marge) * 0.46 - 50, y: haut, h: bas - haut };
-      peindre(ctx, colonne(ctx, identite, gauche, gauche.l / 700), gauche.x + gauche.l / 2, st, img);
+      let x0 = marge, largeur = W - 2 * marge;
+      if (photoAPart) {
+        diametre = Math.min(bas - haut, largeur * 0.33);
+        peindrePhoto(ctx, cadrage, x0 + 30 + diametre / 2, (haut + bas) / 2, diametre, st);
+        x0 += diametre + 70; largeur -= diametre + 70;
+      }
+      const gauche = { x: x0 + 20, l: largeur * 0.54 - 40, y: haut, h: bas - haut };
+      const droite = { x: x0 + largeur * 0.54 + 30, l: largeur * 0.46 - 50, y: haut, h: bas - haut };
+      const places = colonne(ctx, identite, gauche, gauche.l / 700);
+      diametre = diametre || places.find((p) => p.b.type === "photo")?.h || 0;
+      peindre(ctx, places, gauche.x + gauche.l / 2, st, img);
       peindre(ctx, colonne(ctx, sensBlocs, droite, droite.l / 760), droite.x + droite.l / 2, st, img);
       ctx.fillStyle = st.filet;
       ctx.fillRect(droite.x - 36, haut + (bas - haut) * 0.15, 3, (bas - haut) * 0.7);
     } else {
       const boite = { x: marge + 20, l: W - 2 * marge - 40, y: haut, h: bas - haut };
-      peindre(ctx, colonne(ctx, [...identite, ...sensBlocs.map((b, i) => (i ? b : { ...b, avant: 40 }))], boite, boite.l / 820),
-        W / 2, st, img);
+      const places = colonne(ctx, [...identite, ...sensBlocs.map((b, i) => (i ? b : { ...b, avant: 40 }))], boite, boite.l / 820);
+      diametre = places.find((p) => p.b.type === "photo")?.h || 0;
+      peindre(ctx, places, W / 2, st, img);
     }
 
     if (filigrane) {
@@ -320,6 +354,18 @@ const Affiche = (() => {
         ctx.fillText("APERÇU · Prénoms Sénégalais", j * 900 + (i % 2) * 450, i * 150);
       ctx.restore();
     }
+    // Plus de 2,5 fois l'agrandissement à la taille finale : le flou se verra.
+    const photoFloue = avecPhoto && (diametre * f.pixels[0] / W) * cadrage.zoom / Math.min(d.photo.naturalWidth, d.photo.naturalHeight) > 2.5;
+    return { photoFloue };
+  }
+
+  function chargerPhoto(fichier) {
+    return new Promise((ok, non) => {
+      const img = new Image();
+      img.onload = () => ok(img);
+      img.onerror = () => { URL.revokeObjectURL(img.src); non(new Error("image illisible")); };
+      img.src = URL.createObjectURL(fichier);
+    });
   }
 
   // ---------- Export ----------
@@ -389,11 +435,12 @@ const Affiche = (() => {
 
   // ---------- Code de commande : les données de l'affiche, à coller dans admin.html ----------
   const CHAMPS1 = ["nom", "famille", "mention", "fr", "infos", "sens", "source", "genre"];
-  const CHAMPS = [...CHAMPS1, "accroche", "format", "style", "sansSens", "avant", "apres"];
+  const CHAMPS = [...CHAMPS1, "accroche", "format", "style", "sansSens", "avant", "apres", "avecPhoto", "zoom", "px", "py"];
   const b64 = (o) => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   function code(d) {
-    return "PS2-" + b64(CHAMPS.map((c) => (c === "sansSens" ? (d.sansSens ? 1 : 0) : d[c] || "")));
+    return "PS2-" + b64(CHAMPS.map((c) => (c === "sansSens" ? (d.sansSens ? 1 : 0)
+      : c === "avecPhoto" ? (d.photo ? 1 : 0) : d[c] ?? "")));
   }
   function lireCode(texte) {
     const m = String(texte).match(/PS([12])-([A-Za-z0-9_-]+)/);
@@ -401,8 +448,12 @@ const Affiche = (() => {
     try {
       const b = atob(m[2].replace(/-/g, "+").replace(/_/g, "/"));
       const valeurs = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, (c) => c.charCodeAt(0))));
-      const d = Object.fromEntries((m[1] === "1" ? CHAMPS1 : CHAMPS).map((c, i) => [c, valeurs[i] || ""]));
+      const d = Object.fromEntries((m[1] === "1" ? CHAMPS1 : CHAMPS).map((c, i) => [c, valeurs[i] ?? ""]));
       d.sansSens = Boolean(d.sansSens);
+      d.avecPhoto = Boolean(d.avecPhoto);
+      d.zoom = Number(d.zoom) || 1;
+      d.px = d.px === "" ? 50 : Number(d.px);
+      d.py = d.py === "" ? 40 : Number(d.py);
       if (!FORMATS[d.format]) d.format = "a4";
       if (!STYLES[d.style]) d.style = "classique";
       return d;
@@ -419,5 +470,5 @@ const Affiche = (() => {
   // Le nom tel qu'il est écrit sur l'affiche, pour les messages et les noms de fichiers.
   const nomComplet = (d) => [d.avant, d.nom, d.apres, d.famille].filter(Boolean).join(" ");
 
-  return { nomComplet, dessiner, pdf, png, code, lireCode, optionsFormats, FORMATS, STYLES };
+  return { nomComplet, chargerPhoto, dessiner, pdf, png, code, lireCode, optionsFormats, FORMATS, STYLES };
 })();

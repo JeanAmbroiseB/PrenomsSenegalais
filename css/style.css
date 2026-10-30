@@ -296,14 +296,22 @@ a.btn-ghost { display: inline-block; text-decoration: none; }
 .aff-prenoms-titre { margin: 0; font-weight: 600; }
 .aff-prenoms-ligne { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: end; }
 .aff-prenom-fixe { margin: 0 0 10px; font-weight: 700; color: var(--green-dark); }
-.affiche-body.paysage .aff-prenoms { grid-column: 1 / -1; }
+.affiche-body.paysage .aff-prenoms, .affiche-body.paysage .aff-photo { grid-column: 1 / -1; }
+.aff-photo { background: var(--cream); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.aff-photo .field-hint { margin: 0; }
+.dialog-body .aff-photo-choix { flex-direction: row; cursor: pointer; }
+.aff-photo-choix input { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; border: 0; }
+.aff-photo-choix:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+.aff-cadrage { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.aff-cadrage input { padding: 0; border: 0; background: none; accent-color: var(--green); }
+.aff-alerte { margin: 0; background: var(--yellow-soft); color: #6b5000; border-radius: 8px; padding: 8px 10px; font-size: .88rem; }
 .aff-commande { background: var(--cream); border-radius: 12px; padding: 14px 16px; }
 .aff-commande h3 { margin: 0 0 4px; }
 .aff-commande ol { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
 .aff-commande .paiements { margin-top: 6px; }
 a.btn-primary { display: inline-block; text-decoration: none; }
 @media (max-width: 700px) {
-  .affiche-body, .affiche-body.paysage .affiche-champs, .aff-prenoms-ligne { grid-template-columns: 1fr; }
+  .affiche-body, .affiche-body.paysage .affiche-champs, .aff-prenoms-ligne, .aff-cadrage { grid-template-columns: 1fr; }
   .aff-prenom-fixe { margin: 0; text-align: center; }
   .aff-apercu canvas { max-height: 46vh; }
 }

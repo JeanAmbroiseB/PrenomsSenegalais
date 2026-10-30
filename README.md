@@ -108,6 +108,9 @@ Sur chaque fiche, le bouton « Affiche ou bâche » ouvre un petit éditeur avec
 - **styles** : Classique, Nuit étoilée, Bogolan, Douceur (rubrique `STYLES`) ;
 - les autres prénoms de l'enfant, avant ou après le prénom traditionnel (qui reste en premier si on les laisse
   vides) : sur l'affiche, le prénom traditionnel garde sa couleur et le sens lui reste attribué ;
+- la photo de l'enfant, avec zoom et cadrage : elle reste dans le navigateur et le site ne la reçoit jamais.
+  Elle prend la place du baobab, ou une grande colonne à gauche sur les banderoles. Le client l'envoie sur
+  WhatsApp après son message, et vous l'ajoutez dans `admin.html` (le code de commande garde le cadrage) ;
 - phrase d'accueil (« Bienvenue à », « Dalal ak jàmm »…), nom de famille, date ou mention, et le choix
   d'afficher ou non la signification.
 

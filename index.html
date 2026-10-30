@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
   <header class="site-header">
@@ -385,6 +385,21 @@
               </label>
             </div>
           </div>
+          <div class="aff-photo">
+            <p class="aff-prenoms-titre">Photo de l'enfant <span class="opt">(facultatif)</span></p>
+            <label class="btn-ghost aff-photo-choix"><span id="aff-photo-libelle">Choisir une photo</span>
+              <input type="file" id="aff-photo" accept="image/*">
+            </label>
+            <button type="button" class="link-btn" id="aff-photo-retirer" hidden>Retirer la photo</button>
+            <p class="field-hint">La photo reste sur votre appareil : le site ne l'enregistre pas et ne l'envoie nulle part.</p>
+            <div class="aff-cadrage" id="aff-cadrage" hidden>
+              <label><span>Zoom</span><input type="range" id="aff-zoom" min="1" max="3" step="0.05" value="1"></label>
+              <label><span>Gauche – droite</span><input type="range" id="aff-px" min="0" max="100" value="50"></label>
+              <label><span>Haut – bas</span><input type="range" id="aff-py" min="0" max="100" value="40"></label>
+            </div>
+            <p class="aff-alerte" id="aff-photo-floue" hidden>Cette photo est un peu petite pour ce format : elle risque d'être floue
+              à l'impression. Utilisez l'originale si vous l'avez.</p>
+          </div>
           <label><span>Phrase d'accueil <span class="opt">(facultatif)</span></span>
             <input id="aff-accroche" maxlength="40" placeholder="ex. Bienvenue à" list="aff-accroches" autocomplete="off">
             <datalist id="aff-accroches">
@@ -407,6 +422,7 @@
             <ol>
               <li>Payez avec : <span class="paiements" id="aff-paiements"></span></li>
               <li><a class="btn-primary" id="aff-whatsapp" target="_blank" rel="noopener">Envoyer ma commande sur WhatsApp</a></li>
+              <li id="aff-etape-photo" hidden>Envoyez aussi la photo sur WhatsApp, juste après le message, de préférence en document pour garder sa qualité.</li>
               <li>Vous recevez votre fichier sur WhatsApp après vérification du paiement.</li>
             </ol>
           </div>
@@ -418,10 +434,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=12"></script>
-  <script src="data/prenoms.js?v=12"></script>
-  <script src="data/significations.js?v=12"></script>
-  <script src="js/affiche.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/config.js?v=13"></script>
+  <script src="data/prenoms.js?v=13"></script>
+  <script src="data/significations.js?v=13"></script>
+  <script src="js/affiche.js?v=13"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>
