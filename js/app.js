@@ -160,6 +160,7 @@
       renderExplore();
       renderFavs();
       initStats();
+      renderCompleter();
       if (state.current) showName(state.current); else openFromHash();
     } catch { /* hors ligne : on garde les données du site */ }
   }
@@ -172,7 +173,8 @@
     current: null,
     history: store.get(STORE.hist, []),        // les identifiants inconnus sont ignorés à l'affichage
     favs: new Set(store.get(STORE.fav, [])),
-    exploreLimit: PAGE
+    exploreLimit: PAGE,
+    aCompleter: []            // identifiants proposés dans « Aidez à compléter »
   };
 
   // ---------- Générateur ----------
@@ -404,14 +406,14 @@
   }
   function renderExplore() {
     const q = loose($("#q").value);
-    const e = $("#f-ethnie").value, g = $("#f-genre").value, s = $("#f-sens").checked;
+    const e = $("#f-ethnie").value, g = $("#f-genre").value, s = $("#f-sens").checked, sansSens = $("#f-sans-sens").checked;
     // Pertinence : prénom qui commence par la recherche, puis qui la contient, puis signification.
     const rang = (n) => !q ? 0
       : n.searchNoms.some((k) => k.startsWith(q)) ? 0
       : n.searchNoms.some((k) => k.includes(q)) ? 1
       : n.searchSens.includes(q) ? 2 : -1;
     const list = NAMES.map((n) => [n, rang(n)])
-      .filter(([n, r]) => r >= 0 && (!e || n.e === e) && (g === "all" || n.g === g) && (!s || n.sens))
+      .filter(([n, r]) => r >= 0 && (!e || n.e === e) && (g === "all" || n.g === g) && (!s || n.sens) && (!sansSens || !n.sens))
       .sort((a, b) => a[1] - b[1]).map(([n]) => n);
     $("#explore-count").textContent = `${list.length} prénom${list.length > 1 ? "s" : ""}`;
     $("#explore-list").innerHTML = list.slice(0, state.exploreLimit).map(tileHtml).join("");
@@ -424,8 +426,11 @@
   });
   $("#f-ethnie").innerHTML = `<option value="">Toutes les ethnies</option>` +
     Object.entries(ETHNIES).map(([c, et]) => `<option value="${c}">${esc(et.nom)}</option>`).join("");
-  ["#q", "#f-ethnie", "#f-genre", "#f-sens"].forEach((sel) =>
+  ["#q", "#f-ethnie", "#f-genre", "#f-sens", "#f-sans-sens"].forEach((sel) =>
     $(sel).addEventListener("input", () => { state.exploreLimit = PAGE; renderExplore(); }));
+  // « Avec » et « Sans » signification s'excluent.
+  $("#f-sens").addEventListener("change", (ev) => { if (ev.target.checked) { $("#f-sans-sens").checked = false; renderExplore(); } });
+  $("#f-sans-sens").addEventListener("change", (ev) => { if (ev.target.checked) { $("#f-sens").checked = false; renderExplore(); } });
   $("#explore-more").addEventListener("click", () => { state.exploreLimit += PAGE; renderExplore(); });
 
   function openFromTile(ev) {
@@ -437,6 +442,70 @@
   }
   $("#explore-list").addEventListener("click", openFromTile);
   $("#fav-list").addEventListener("click", openFromTile);
+
+  // ---------- Aidez à compléter ----------
+  const COMP_NB = 6;
+  const aCompleter = (n) => !n.sens || n.g === "x";
+  function melanger(liste) {
+    const l = [...liste];
+    for (let i = l.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [l[i], l[j]] = [l[j], l[i]];
+    }
+    return l;
+  }
+  // Sans statistiques de visite, on met en avant les prénoms du calendrier, ceux qu'on voit passer dans l'année.
+  function choisirACompleter(exclus = new Set()) {
+    const libres = NAMES.filter((n) => aCompleter(n) && !exclus.has(n.id));
+    return [...melanger(libres.filter((n) => n.dates.length)), ...melanger(libres.filter((n) => !n.dates.length))];
+  }
+  function barre(sel, nbSel, n, total) {
+    const pc = total ? Math.round(n / total * 100) : 0;
+    $(nbSel).textContent = `${n} sur ${total}`;
+    $(sel).setAttribute("aria-valuenow", pc);
+    $(sel).firstElementChild.style.width = `${Math.max(pc, 1)}%`;
+  }
+  function renderCompleter() {
+    barre("#comp-sens-barre", "#comp-sens-n", NAMES.filter((n) => n.sens).length, NAMES.length);
+    barre("#comp-genre-barre", "#comp-genre-n", NAMES.filter((n) => n.g !== "x").length, NAMES.length);
+    // Un prénom complété entre-temps laisse sa place à un autre.
+    let liste = state.aCompleter.map((id) => byId.get(id)).filter((n) => n && aCompleter(n));
+    if (liste.length < COMP_NB) {
+      liste = [...liste, ...choisirACompleter(new Set(liste.map((n) => n.id)))].slice(0, COMP_NB);
+    }
+    state.aCompleter = liste.map((n) => n.id);
+    $("#comp-liste").innerHTML = liste.map((n) => {
+      const manque = [!n.sens && "Signification", n.g === "x" && "Genre"].filter(Boolean);
+      return `<div class="comp-carte">
+        <a class="comp-nom" ${n.page ? `href="${pageOf(n)}"` : `href="#p=${encodeURIComponent(n.id)}"`}>${esc(n.nom)}</a>
+        <p class="t-meta">${esc(ETHNIES[n.e].nom)}${n.dates[0] ? ` · ${formatDate(n.dates[0])}` : ""}</p>
+        <p class="comp-manque">À préciser : ${manque.join(", ").toLowerCase()}</p>
+        <button type="button" class="btn-action suggest" data-comp="${esc(n.id)}">Je peux aider</button>
+      </div>`;
+    }).join("");
+    const noms = liste.map((n) => n.nom).join(", ");
+    $("#comp-partage").href = "https://wa.me/?text=" + encodeURIComponent(
+      `Aidons à retrouver le sens de nos prénoms. Connais-tu la signification de ${noms} ?\n` +
+      `${location.origin}${location.pathname}#completer`);
+  }
+  $("#comp-liste").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-comp]");
+    if (!b) return;
+    const n = byId.get(b.dataset.comp);
+    openSuggest(n.sens ? "modification" : "definition", n);
+  });
+  $("#comp-autres").addEventListener("click", () => {
+    state.aCompleter = choisirACompleter(new Set(state.aCompleter)).slice(0, COMP_NB).map((n) => n.id);
+    renderCompleter();
+  });
+  $("#comp-tous").addEventListener("click", () => {
+    $("#q").value = "";
+    $("#f-sens").checked = false;
+    $("#f-sans-sens").checked = true;
+    state.exploreLimit = PAGE;
+    renderExplore();
+    $("#explorer").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+  });
 
   // ---------- Suggestions ----------
   const dlg = $("#suggest-dialog");
@@ -457,13 +526,13 @@
     $("#s-prenom").value = n ? n.nom : "";
     $("#s-id").value = n ? n.id : "";
     $("#s-ethnie").value = n && n.e !== "NC" ? n.e : "";
-    $("#s-genre").value = n ? n.g : "";
+    $("#s-genre").value = n && n.g !== "x" ? n.g : "";
     if (n && n.sens && type !== "nouveau") $("#s-sens").value = n.sens.sens;
     $("#s-auteur").value = store.get(STORE.auteur, "");
     majApercu();
     updateSuggestTitle();
     if (!dlg.open) dlg.showModal();
-    (n ? $("#s-sens") : $("#s-prenom")).focus();
+    (n ? (n.sens && n.g === "x" ? $("#s-genre") : $("#s-sens")) : $("#s-prenom")).focus();
   }
   function majApercu() { $("#s-apercu").textContent = $("#s-auteur").value.trim() || "Aly Diop"; }
   $("#s-auteur").addEventListener("input", majApercu);
@@ -698,6 +767,7 @@
   renderFavs();
   initToday();
   initStats();
+  renderCompleter();
   if (BETA.change) toast(BETA.change === "on" ? "Mode bêta activé sur ce navigateur" : "Mode bêta désactivé sur ce navigateur");
   openFromHash();
   chargerContributions();

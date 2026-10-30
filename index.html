@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
   <header class="site-header">
@@ -63,6 +63,7 @@
       </a>
       <nav class="nav">
         <a href="#generateur">Générer</a>
+        <a href="#completer">Contribuer</a>
         <a href="#explorer">Explorer</a>
         <a href="#favoris">Favoris <span id="fav-count" class="pill" hidden></span></a>
         <a href="#apropos">À propos</a>
@@ -122,6 +123,31 @@
       </div>
     </section>
 
+    <section class="wrap section" id="completer">
+      <div class="section-head">
+        <h2>Aidez à compléter</h2>
+        <div class="section-actions">
+          <a class="btn-ghost" id="comp-partage" target="_blank" rel="noopener">Demander à mes proches sur WhatsApp</a>
+          <button class="btn-ghost" id="comp-autres" type="button">D'autres prénoms</button>
+        </div>
+      </div>
+      <p class="comp-intro">Beaucoup de prénoms de nos ancêtres ont perdu leur explication. Une grand-mère, un ancien, un livre de
+        famille la connaissent peut-être encore. Si vous êtes sûr(e) de ce que vous savez, partagez-le : votre nom
+        restera associé à cette transmission.</p>
+      <div class="comp-progres">
+        <div>
+          <p><b id="comp-sens-n"></b> prénoms ont une signification</p>
+          <div class="comp-barre" role="progressbar" id="comp-sens-barre" aria-label="Prénoms avec une signification"><i></i></div>
+        </div>
+        <div>
+          <p><b id="comp-genre-n"></b> prénoms ont un genre précisé</p>
+          <div class="comp-barre" role="progressbar" id="comp-genre-barre" aria-label="Prénoms au genre précisé"><i></i></div>
+        </div>
+      </div>
+      <div class="comp-liste" id="comp-liste"></div>
+      <button class="btn-ghost more" id="comp-tous" type="button">Voir tous les prénoms sans signification</button>
+    </section>
+
     <section class="wrap section" id="explorer">
       <div class="section-head">
         <h2>Explorer tous les prénoms</h2>
@@ -140,6 +166,7 @@
           <option value="x">Genre non précisé</option>
         </select>
         <label class="check"><input type="checkbox" id="f-sens"> Avec signification</label>
+        <label class="check"><input type="checkbox" id="f-sans-sens"> Sans signification</label>
       </div>
       <p class="muted" id="explore-count"></p>
       <p class="explore-vide" id="explore-vide" hidden>Ce prénom n'est pas encore dans notre liste.
@@ -434,10 +461,10 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="js/config.js?v=13"></script>
-  <script src="data/prenoms.js?v=13"></script>
-  <script src="data/significations.js?v=13"></script>
-  <script src="js/affiche.js?v=13"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/config.js?v=14"></script>
+  <script src="data/prenoms.js?v=14"></script>
+  <script src="data/significations.js?v=14"></script>
+  <script src="js/affiche.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>

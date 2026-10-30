@@ -97,6 +97,13 @@ Ensuite, aller sur `https://…/admin.html` et se connecter.
 Tant que `js/config.js` n'est pas rempli, les propositions restent dans le navigateur de la personne
 qui les envoie (mode test).
 
+## Aidez à compléter
+
+La rubrique « Contribuer » de l'accueil montre l'avancement (significations et genres connus) et propose six
+prénoms à compléter, tirés au hasard et en priorité parmi ceux du calendrier. Le bouton « Je peux aider »
+ouvre le formulaire de suggestion habituel : les contributions restent à relire dans `admin.html`.
+Le filtre « Sans signification » de l'exploration donne la liste complète.
+
 ## Affiches et bâches du prénom (bêta)
 
 Sur chaque fiche, le bouton « Affiche ou bâche » ouvre un petit éditeur avec un aperçu (avec filigrane) :

@@ -263,6 +263,22 @@ a.btn-ghost { display: inline-block; text-decoration: none; }
 .az-group { margin-top: 32px; }
 .az-group h2 { color: var(--green-dark); border-bottom: 2px solid var(--yellow); padding-bottom: 4px; }
 
+/* ---------- Aidez à compléter ---------- */
+.comp-intro { max-width: 70ch; margin: 0 0 16px; }
+.comp-progres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-bottom: 18px; }
+.comp-progres p { margin: 0 0 6px; font-size: .92rem; }
+.comp-barre { height: 10px; border-radius: 999px; background: var(--green-soft); overflow: hidden; }
+.comp-barre i { display: block; height: 100%; background: var(--green); border-radius: inherit; }
+.comp-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.comp-carte { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.comp-nom { font-size: 1.15rem; font-weight: 700; color: var(--green-dark); text-decoration: none; }
+.comp-nom:hover { text-decoration: underline; }
+.comp-carte p { margin: 0; }
+.comp-manque { font-size: .85rem; color: var(--muted); margin-bottom: 8px !important; }
+.comp-carte .btn-action { margin-top: auto; }
+@media (max-width: 700px) { .comp-progres { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .nav { gap: 0; } .nav a { padding: 6px 6px; font-size: .88rem; } }
+
 /* ---------- Affiche et bâche du prénom (bêta) ---------- */
 .beta { display: inline-block; vertical-align: middle; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   background: var(--red); color: #fff; border-radius: 999px; padding: 1px 7px; margin-left: 4px; }

@@ -20,7 +20,7 @@ import urllib.parse
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DOSSIER = RACINE / "prenom"
-VERSION = "13"  # même numéro que les ?v= de index.html (cache des navigateurs)
+VERSION = "14"  # même numéro que les ?v= de index.html (cache des navigateurs)
 NB_VOISINS = 12
 
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
